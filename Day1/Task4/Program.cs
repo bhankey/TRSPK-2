@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Text;
+using System.Diagnostics;
+using System.Threading;
+using DefaultNamespace;
 
 namespace Task4
 {
@@ -9,104 +11,137 @@ namespace Task4
     
     class Program
     {
-        private static int _countOfIteration = 10000000;
         
-        static long ArrayListIntTime()
+
+        static public long TestingPerformance<TContainer, TArg, TYpeOfCheck>(TContainer c, TArg e,  TYpeOfCheck t) 
+            where TContainer: IList, new()
+            where TYpeOfCheck: IPerformance
         {
-            ArrayList list = new ArrayList();
-            
-            var watch = System.Diagnostics.Stopwatch.StartNew();
-            
-            for (var i = 0; i < _countOfIteration; ++i)
-            {
-                list.Add(i);
-            }
+            var watch = Stopwatch.StartNew();
 
-            for (var i = 0; i < _countOfIteration; ++i)
-            {
-                _ = list.GetRange(i, 1);
-            }
+            t.Check(c, e);
             
             watch.Stop();
 
             return watch.ElapsedMilliseconds;
         }
-        
-        static long ListIntTime()
-        { 
-            var list = new List<int>();
-            
-            var watch = System.Diagnostics.Stopwatch.StartNew();
-            
-            for (var i = 0; i < _countOfIteration; ++i)
-            {
-                list.Add(i);
-            }
 
-            for (var i = 0; i < _countOfIteration; ++i)
-            {
-                _ = list.GetRange(i, 1);
-            }
-            
-            watch.Stop();
-
-            return watch.ElapsedMilliseconds;
-        }
-        
-        static long ArrayListStringTime()
+        static public TContainer PrepareList<TContainer, TArg>(int count, TArg example)
+            where TContainer: IList, new()
         {
-            ArrayList list = new ArrayList();
-            
-            var watch = System.Diagnostics.Stopwatch.StartNew();
+            TContainer list = new TContainer();
 
-            string someString = "123455";
-            for (var i = 0; i < _countOfIteration; ++i)
-            { ;
-                list.Add(someString);
-            }
-
-            for (var i = 0; i < _countOfIteration; ++i)
+            for (int i = 0; i < count; i++)
             {
-                _ = list.GetRange(i, 1);
-            }
-            
-            watch.Stop();
-
-            return watch.ElapsedMilliseconds;
-        }
-        
-        static long ListStringTime()
-        { 
-            var list = new List<string>();
-            
-            var watch = System.Diagnostics.Stopwatch.StartNew();
-
-            string someString = "123455";
-            for (var i = 0; i < _countOfIteration; ++i)
-            {
-                list.Add(someString);
+                list.Add(example);
             }
 
-            for (var i = 0; i < _countOfIteration; ++i)
-            {
-                _ = list.GetRange(i, 1);
-            }
-            
-            watch.Stop();
-
-            return watch.ElapsedMilliseconds;
+            return list;
         }
         
         static void Main(string[] args)
         {
-            System.GC.Collect();
-            Console.WriteLine($"Time of ArrayList With int in milliseconds {ArrayListIntTime()}");
-            System.GC.Collect();
-            Console.WriteLine($"Time of List With int in milliseconds {ListIntTime()}");
-            System.GC.Collect();
-            Console.WriteLine($"Time of ArrayList With string in milliseconds {ArrayListStringTime()}");
-            System.GC.Collect();
-            Console.WriteLine($"Time of List With int in milliseconds {ListStringTime()}");
+            var add = new AddPerformance();
+            var get = new GetPerformance();
+            
+            // add testing
+            try
+            {
+                var element = 5;
+                var list = PrepareList<ArrayList, int>(0, element);
+                Console.WriteLine($"Add time of ArrayList With int in milliseconds {TestingPerformance(list,element, add)}");
+            }
+            finally
+            {
+                GC.Collect();
+                Thread.Sleep(100);
+            }
+            
+            try
+            {
+                var element = 5;
+                var list = PrepareList<List<int>, int>(0, element);
+                Console.WriteLine($"Add time of List With int in milliseconds {TestingPerformance(list, element, add)}");
+            }
+            finally
+            {
+                GC.Collect();
+                Thread.Sleep(100);
+            }
+            
+            try
+            {
+                var element = "111";
+                var list = PrepareList<ArrayList, string>(0, element);
+                Console.WriteLine($"Add time of ArrayList With string in milliseconds {TestingPerformance(list, element, add)}");
+            }
+            finally
+            {
+                GC.Collect();
+                Thread.Sleep(100);
+            }
+            try
+            {
+                var element = "111";
+                var list = PrepareList<List<string>, string>(0, element);
+                Console.WriteLine($"Add time of List With string in milliseconds {TestingPerformance(list, element, add)}");
+            }
+            finally
+            {
+                GC.Collect();
+                Thread.Sleep(100);
+            }
+            
+            
+            // Get Testing
+            try
+            {
+                var element = 5;
+                var list = PrepareList<ArrayList, int>(IPerformance.CountOfIteration, element);
+                Console.WriteLine($"Get time of ArrayList With int in milliseconds {TestingPerformance(list, element, get)}");
+            }
+            finally
+            {
+                GC.Collect();
+                Thread.Sleep(100);
+            }
+            
+            try
+            {
+                var element = 5;
+                var list = PrepareList<List<int>, int>(IPerformance.CountOfIteration, element);
+                Console.WriteLine($"Get time of List With int in milliseconds {TestingPerformance(list, element, get)}");
+            }
+            finally
+            {
+                GC.Collect();
+                Thread.Sleep(100);
+            }
+            
+            try
+            {
+                var element = "111";
+                var list = PrepareList<ArrayList, string>(IPerformance.CountOfIteration, element);
+                Console.WriteLine($"Get time of ArrayList With string in milliseconds {TestingPerformance(list, element, add)}");
+            }
+            finally
+            {
+                GC.Collect();
+                Thread.Sleep(100);
+            }
+            
+            try
+            {
+                var element = "111";
+                var list = PrepareList<List<string>, string>(IPerformance.CountOfIteration, element);
+                Console.WriteLine($"Get time of List With string in milliseconds {TestingPerformance(list, element, get)}");
+            }
+            finally
+            {
+                GC.Collect();
+                Thread.Sleep(100);
+            }
+            
         }
     }
 }
