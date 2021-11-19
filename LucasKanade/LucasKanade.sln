@@ -1,16 +1,31 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LucasKanade", "LucasKanade\LucasKanade.csproj", "{161AE8B9-78FD-4C4C-96BD-75C00BE34F8E}"
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30128.74
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LucasKanade", "LucasKanade\LucasKanade.csproj", "{161AE8B9-78FD-4C4C-96BD-75C00BE34F8E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
+		Debug|x64 = Debug|x64
 		Release|Any CPU = Release|Any CPU
+		Release|x64 = Release|x64
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{161AE8B9-78FD-4C4C-96BD-75C00BE34F8E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{161AE8B9-78FD-4C4C-96BD-75C00BE34F8E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{161AE8B9-78FD-4C4C-96BD-75C00BE34F8E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{161AE8B9-78FD-4C4C-96BD-75C00BE34F8E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{161AE8B9-78FD-4C4C-96BD-75C00BE34F8E}.Release|x64.ActiveCfg = Release|x64
+		{161AE8B9-78FD-4C4C-96BD-75C00BE34F8E}.Release|x64.Build.0 = Release|x64
+		{161AE8B9-78FD-4C4C-96BD-75C00BE34F8E}.Debug|x64.ActiveCfg = Debug|x64
+		{161AE8B9-78FD-4C4C-96BD-75C00BE34F8E}.Debug|x64.Build.0 = Debug|x64
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {76235101-D30F-4FE8-8287-B363F385B604}
 	EndGlobalSection
 EndGlobal
