@@ -39,7 +39,7 @@ namespace LucasKanade
             _isLoaded = true;
         }
 
-        public bool TryGetNextFrame(out Image bitmap)
+        public bool TryGetNextFrame(out Image<Bgr24> bitmap)
         {
             bitmap = default;
             if (!_isLoaded)
