@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Drawing;
 using FFMediaToolkit.Decoding;
 using FFMediaToolkit.Graphics;
 using SixLabors.ImageSharp;
@@ -25,6 +24,14 @@ namespace LucasKanade
         public VideoSplitter(string pathToVideo)
         {
             _pathToVideo = pathToVideo;
+        }
+        
+        ~VideoSplitter()
+        {
+            if (_isLoaded)
+            {
+                _file.Dispose();
+            }
         }
         
         public void Clean()
