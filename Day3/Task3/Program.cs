@@ -14,6 +14,14 @@ namespace Task3
                 _i++;
             }
         }
+        
+        static void IncrementVarSafe()
+        {
+            for (int j = 0; j < 1000000; j++)
+            {
+                Interlocked.Increment(ref _i);
+            }
+        }
 
         static void Main(string[] args)
         {
