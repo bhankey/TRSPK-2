@@ -30,7 +30,20 @@ namespace LucasKanade
         }
         static void Main(string[] args)
         {
-            ExampleOfWorkingWithSplitter();
+           // ExampleOfWorkingWithSplitter();
+
+            var f = new double[2][];
+            for (int i = 0; i < 2; i++)
+            {
+                f[i] = new[]{2.0, 2.0};
+            }
+
+            f[0][0] = 4;
+            f[0][1] = 3;
+            f[1][0] = 3;
+            f[1][1] = 2;
+
+            var a = MatrixOperation.MatrixInverse(f);
         }
     }
 }
