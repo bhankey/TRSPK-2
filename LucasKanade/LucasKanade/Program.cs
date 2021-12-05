@@ -1,4 +1,5 @@
 ﻿using System;
+using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 
 namespace LucasKanade
@@ -30,20 +31,18 @@ namespace LucasKanade
         }
         static void Main(string[] args)
         {
-           // ExampleOfWorkingWithSplitter();
+            var imageFirst = Image.Load<Rgb24>("C:\\Users\\Sergey\\RiderProjects\\TRSPK-2\\LucasKanade\\photos\\mostSimpleExample\\sample1-17.png");
+            var imageSecond =
+                Image.Load<Rgb24>
+                (
+                    "C:\\Users\\Sergey\\RiderProjects\\TRSPK-2\\LucasKanade\\photos\\mostSimpleExample\\sample1-18.png");
 
-            var f = new double[2][];
-            for (int i = 0; i < 2; i++)
-            {
-                f[i] = new[]{2.0, 2.0};
-            }
+            var imageMatrix = ImageUtils.ToGrayScale(imageFirst);
+            var imageMatrix2 = ImageUtils.ToGrayScale(imageSecond);
 
-            f[0][0] = 4;
-            f[0][1] = 3;
-            f[1][0] = 3;
-            f[1][1] = 2;
+            var res = LucasKanade.GetOpticalFlow(imageMatrix, imageMatrix2);
 
-            var a = MatrixOperation.MatrixInverse(f);
+            Console.WriteLine("lol");
         }
     }
 }

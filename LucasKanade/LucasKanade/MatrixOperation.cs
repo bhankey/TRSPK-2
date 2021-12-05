@@ -5,25 +5,19 @@ namespace LucasKanade
     // TODO написать вычисление обратной матрицы
     public static class MatrixOperation
     {
-        public static T[][] MatrixCreate<T>(int rows, int cols)
+        public static T[,] MatrixCreate<T>(int rows, int cols)
         {
-            T[][] result = new T[rows][];
-            for (int i = 0; i < rows; ++i)
-            {
-                result[i] = new T[cols];
-            }
-
-            return result;
+            return new T[rows, cols];
         }
         
-        public static T[][] MatrixDuplicate<T>(T[][] matrix)
+        public static T[,] MatrixDuplicate<T>(T[,] matrix)
         {
-            var result = MatrixCreate<T>(matrix.Length, matrix[0].Length);
+            var result = MatrixCreate<T>(matrix.GetLength(0), matrix.GetLength(1));
             for (int i = 0; i < matrix.GetLength(0); ++i)
             {
-                for (int j = 0; j < matrix[i].GetLength(0); ++j)
+                for (int j = 0; j < matrix.GetLength(1); ++j)
                 {
-                    result[i][j] = matrix[i][j];
+                    result[i, j] = matrix[i, j];
                 }
             }
 
@@ -101,15 +95,46 @@ namespace LucasKanade
 
             return result;
         }
+        
+        public static T[,] ConcatenateByYAxis<T>(T[,] first, T[,] second)
+        {
+            if (first.GetLength(0) != second.GetLength(0))
+            {
+                throw new ArgumentException("matrix must have same count of axis");
+            }
 
-        public static int[,] MatrixMultiplier(int[,] first, int[,] second)
+            var rowsCount = first.GetUpperBound(0) + second.GetUpperBound(0) + 2;
+            var columnsCount = first.GetUpperBound(1) + 1;
+            var result = new T[rowsCount, columnsCount];
+
+            var rows = 0;
+            for (; rows < first.GetLength(0); rows++)
+            {
+                for (var columns = 0;columns < first.GetLength(1); columns++)
+                {
+                    result[rows, columns] = first[rows, columns];
+                }
+            }
+            
+            for (var secondRows = 0; secondRows < second.GetLength(0); secondRows++)
+            {
+                for (var columns = 0;columns < second.GetLength(1); columns++)
+                {
+                    result[rows, columns] = second[secondRows, columns];
+                }
+            }
+
+            return result;
+        }
+
+        public static double[,] MatrixMultiplier(double[,] first, double[,] second)
         {
             if (first.GetLength(1) != second.GetLength(0))
             {
                 throw new ArgumentException("Can't calculate bla bla bla");
             }
 
-            var result = new int[first.GetLength(0), second.GetLength(1)];
+            var result = new double[first.GetLength(0), second.GetLength(1)];
 
             for (int i = 0; i < first.GetLength(0); i++)
             {
@@ -125,9 +150,9 @@ namespace LucasKanade
             return result;
         }
 
-        public static double[][] MatrixInverse(double[][] matrix)
+        public static double[,] MatrixInverse(double[,] matrix)
         {
-            int n = matrix.Length;
+            int n = matrix.GetLength(0);
             var result = MatrixDuplicate(matrix);
 
             int[] perm;
@@ -147,19 +172,19 @@ namespace LucasKanade
                         b[j] = 0.0;
                 }
 
-                double[] x = helperSolve(lum, b);
+                double[] x = HelperSolve(lum, b);
 
                 for (int j = 0; j < n; ++j)
-                    result[j][i] = x[j];
+                    result[j, i] = x[j];
             }
 
             return result;
         }
 
-        private static double[][] MatrixDecompose(double[][] matrix, out int[] perm, out int toggle)
+        private static double[,] MatrixDecompose(double[,] matrix, out int[] perm, out int toggle)
         {
-            var rows = matrix.Length;
-            var cols = matrix[0].Length;
+            var rows = matrix.GetLength(0);
+            var cols = matrix.GetLength(1);
 
             if (rows != cols)
                 throw new Exception("Attempt to decompose a non-square m");
@@ -179,7 +204,7 @@ namespace LucasKanade
 
             for (int j = 0; j < n - 1; ++j) // each column
             {
-                var colMax = Math.Abs(result[j][j]); // find largest val in col
+                var colMax = Math.Abs(result[j, j]); // find largest val in col
                 var pRow = j;
                 //for (int i = j + 1; i < n; ++i)
                 //{
@@ -193,9 +218,9 @@ namespace LucasKanade
                 // reader Matt V needed this:
                 for (int i = j + 1; i < n; ++i)
                 {
-                    if (Math.Abs(result[i][j]) > colMax)
+                    if (Math.Abs(result[i,j]) > colMax)
                     {
-                        colMax = Math.Abs(result[i][j]);
+                        colMax = Math.Abs(result[i, j]);
                         pRow = i;
                     }
                 }
@@ -203,7 +228,7 @@ namespace LucasKanade
 
                 if (pRow != j) // if largest value not on pivot, swap rows
                 {
-                    (result[pRow], result[j]) = (result[j], result[pRow]);
+                    Swap2DRows(result,pRow, j);
 
                     (perm[pRow], perm[j]) = (perm[j], perm[pRow]);
 
@@ -218,13 +243,13 @@ namespace LucasKanade
                 // a 0 in column j, and swap that good row with row j
                 // --------------------------------------------------
 
-                if (result[j][j] == 0.0)
+                if (result[j, j] == 0.0)
                 {
                     // find a good row to swap
                     int goodRow = -1;
                     for (int row = j + 1; row < n; ++row)
                     {
-                        if (result[row][j] != 0.0)
+                        if (result[row, j] != 0.0)
                             goodRow = row;
                     }
 
@@ -232,7 +257,7 @@ namespace LucasKanade
                         throw new Exception("Cannot use Doolittle's method");
 
                     // swap rows so 0.0 no longer on diagonal
-                    (result[goodRow], result[j]) = (result[j], result[goodRow]);
+                    Swap2DRows(result, goodRow, j);
 
                     (perm[goodRow], perm[j]) = (perm[j], perm[goodRow]);
 
@@ -245,24 +270,22 @@ namespace LucasKanade
 
                 for (int i = j + 1; i < n; ++i)
                 {
-                    result[i][j] /= result[j][j];
+                    result[i, j] /= result[j, j];
                     for (int k = j + 1; k < n; ++k)
                     {
-                        result[i][k] -= result[i][j] * result[j][k];
+                        result[i, k] -= result[i, j] * result[j, k];
                     }
                 }
             } // main j column loop
 
             return result;
         } // MatrixDecompose
-
-
         
-        private static double[] helperSolve(double[][] luMatrix, double[] b)
+        private static double[] HelperSolve(double[,] luMatrix, double[] b)
         {
             // before calling this helper, permute b using the perm array
             // from MatrixDecompose that generated luMatrix
-            int n = luMatrix.Length;
+            int n = luMatrix.GetLength(0);
             double[] x = new double[n];
             b.CopyTo(x, 0);
 
@@ -270,20 +293,66 @@ namespace LucasKanade
             {
                 double sum = x[i];
                 for (int j = 0; j < i; ++j)
-                    sum -= luMatrix[i][j] * x[j];
+                    sum -= luMatrix[i, j] * x[j];
                 x[i] = sum;
             }
 
-            x[n - 1] /= luMatrix[n - 1][n - 1];
+            x[n - 1] /= luMatrix[n - 1, n - 1];
             for (int i = n - 2; i >= 0; --i)
             {
                 double sum = x[i];
                 for (int j = i + 1; j < n; ++j)
-                    sum -= luMatrix[i][j] * x[j];
-                x[i] = sum / luMatrix[i][i];
+                    sum -= luMatrix[i,j] * x[j];
+                x[i] = sum / luMatrix[i, i];
             }
 
             return x;
         }
+
+        public static double[,] FlattenInRows(double[,] matrix)
+        {
+            var flattenMatrix = new double[matrix.GetLength(0) * matrix.GetLength(1), 1];
+
+            var k = 0;
+            for (int i = 0; i < matrix.GetLength(0); i++)
+            {
+                for (int j = 0; j < matrix.GetLength(1); j++)
+                {
+                    flattenMatrix[k++, 0] = matrix[i, j];
+                }
+            }
+
+            return flattenMatrix;
+        }
+
+
+        public static void Swap2DRows<T>(T[,] a, int indexOne, int indexTwo)
+        {
+            for (int i = 0; i < a.GetUpperBound(1); i++)
+            {
+                (a[indexOne, i], a[indexTwo, i]) = (a[indexTwo, i], a[indexOne, i]);
+            }
+        }
+        
+        public static void Swap2DColons<T>(T[,] a, int indexOne, int indexTwo)
+        {
+            for (int i = 0; i < a.GetUpperBound(0); i++)
+            {
+                (a[i, indexOne], a[i, indexTwo]) = (a[i, indexTwo], a[i, indexOne]);
+            }
+        }
+
+        public static T[] GetRow<T>(T[,] matrix, int i)
+        {
+            var result = new T[matrix.GetUpperBound(0)];
+
+            for (int j = 0; j < matrix.GetUpperBound(0); j++)
+            {
+                result[i] = matrix[i, j];
+            }
+
+            return result;
+        }
     }
+    
 }
