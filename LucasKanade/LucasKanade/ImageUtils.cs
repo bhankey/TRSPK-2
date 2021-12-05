@@ -6,11 +6,11 @@ namespace LucasKanade
 {
     public static class ImageUtils
     {
-        public static byte[,] ToGrayScale(Image<Rgb24> image)
+        public static double[,] ToGrayScale(Image<Rgb24> image)
         {
             image.Mutate(x => x.Grayscale());
 
-            var grayImage = new byte[image.Height, image.Width];
+            var grayImage = new double[image.Height, image.Width];
 
             for (int i = 0; i < image.Height; i++)
             {
