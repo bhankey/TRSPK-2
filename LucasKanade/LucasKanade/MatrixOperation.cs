@@ -36,8 +36,8 @@ namespace LucasKanade
         // Transpose - транспонирует матрицу
         public static T[,] Transpose<T>(T[,] matrix)
         {
-            var rowsCount = matrix.GetLength(0);
-            var columnsCount = matrix.GetLength(1);
+            var rowsCount = GetRowsCount(matrix);
+            var columnsCount = GetColumnsCount(matrix);
 
             var trans = new T[columnsCount, rowsCount];
 
@@ -54,9 +54,9 @@ namespace LucasKanade
 
         public static void Print2DMatrix<T>(T[,] matrix)
         {
-            for (int rows = 0; rows < matrix.GetLength(0); rows++)
+            for (int rows = 0; rows < GetRowsCount(matrix); rows++)
             {
-                for (int columns = 0; columns < matrix.GetLength(1); columns++)
+                for (int columns = 0; columns < GetColumnsCount(matrix); columns++)
                 {
                     Console.Write($"{matrix[rows, columns]} ");
                 }
@@ -68,28 +68,27 @@ namespace LucasKanade
         // ConcatenateByXAxis конкатенирование массиво по оси x
         public static T[,] ConcatenateByXAxis<T>(T[,] first, T[,] second)
         {
-            if (first.GetLength(0) != second.GetLength(0))
+            if (GetRowsCount(first) != GetRowsCount(second))
             {
                 throw new ArgumentException("matrix must have same count of axis");
             }
 
-            var rowsCount = first.GetLength(0);
-            var columnsCount = first.GetLength(1) + second.GetLength(1);
+            var rowsCount = GetRowsCount(first);
+            var columnsCount = GetColumnsCount(first) + GetColumnsCount(second);
+            
             var result = new T[rowsCount, columnsCount];
 
             for (int rows = 0; rows < rowsCount; rows++)
             {
                 var columns = 0;
-                for (; columns < first.GetLength(1); columns++)
+                for (; columns < GetColumnsCount(first); columns++)
                 {
                     result[rows, columns] = first[rows, columns];
                 }
 
-                for (int secondMatrixColumns = 0;
-                    secondMatrixColumns < second.GetLength(1);
-                    secondMatrixColumns++, columns++)
+                for (int secondMColumns = 0; secondMColumns < GetColumnsCount(second); secondMColumns++, columns++)
                 {
-                    result[rows, columns] = second[rows, secondMatrixColumns];
+                    result[rows, columns] = second[rows, secondMColumns];
                 }
             }
 
@@ -344,11 +343,11 @@ namespace LucasKanade
 
         public static T[] GetRow<T>(T[,] matrix, int i)
         {
-            var result = new T[matrix.GetUpperBound(0)];
+            var result = new T[matrix.GetLength(0)];
 
-            for (int j = 0; j < matrix.GetUpperBound(0); j++)
+            for (int j = 0; j < matrix.GetLength(0); j++)
             {
-                result[i] = matrix[i, j];
+                result[j] = matrix[j, i];
             }
 
             return result;

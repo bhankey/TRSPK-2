@@ -46,7 +46,7 @@ namespace LucasKanade
             _isLoaded = true;
         }
 
-        public bool TryGetNextFrame(out Image<Bgr24> bitmap)
+        public bool TryGetNextFrame(out Image<Rgb24> bitmap)
         {
             bitmap = default;
             if (!_isLoaded)
@@ -65,14 +65,14 @@ namespace LucasKanade
 
             return true;
         }
-        public List<Image<Bgr24>> GetAllFrames()
+        public List<Image<Rgb24>> GetAllFrames()
         {
             if (!_isLoaded)
             {
                 throw new Exception("Video is not loaded");
             }
             
-            var images = new List<Image<Bgr24>>();
+            var images = new List<Image<Rgb24>>();
             while (_file.Video.TryGetNextFrame(out var imageData))
             {
                 var image = ToBitmap(imageData);
@@ -82,9 +82,9 @@ namespace LucasKanade
             return images;
         }
         
-        private static Image<Bgr24> ToBitmap(ImageData imageData)
+        private static Image<Rgb24> ToBitmap(ImageData imageData)
         {
-            return Image.LoadPixelData<Bgr24>(imageData.Data, imageData.ImageSize.Width, imageData.ImageSize.Height);
+            return Image.LoadPixelData<Rgb24>(imageData.Data, imageData.ImageSize.Width, imageData.ImageSize.Height);
         }
     }
 }

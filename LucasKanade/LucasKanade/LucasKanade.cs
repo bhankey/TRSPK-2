@@ -1,42 +1,49 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+
 
 namespace LucasKanade
 {
     public static class LucasKanade
     {
-        private const int BoxSize = 30;
-
+        private const int BoxSize = 9;
+        
         public static int GetBoxSize()
         {
             return BoxSize;
         }
 
-        public static List<double[]> GetOpticalFlow(double[,] firstImage, double[,] secondImage)
+        public static List<List<double[]>> GetOpticalFlow(double[,] firstImage, double[,] secondImage)
         {
-            var opticalFlow = new List<double[]>();
-            
             if (MatrixOperation.GetRowsCount(firstImage) != MatrixOperation.GetRowsCount(secondImage)
                 || MatrixOperation.GetColumnsCount(firstImage) != MatrixOperation.GetColumnsCount(secondImage))
             {
                 throw new ArgumentException("image must be same size");
             }
 
-            var x = 0;
-            var y = 0;
-            
-            for (;x + BoxSize < MatrixOperation.GetRowsCount(firstImage); x += BoxSize)
+
+            var opticalFlow = new List<List<double[]>>(MatrixOperation.GetRowsCount(firstImage) / BoxSize + 1);
+            for (int x = 0; x < MatrixOperation.GetRowsCount(firstImage) / BoxSize; x += 1)
             {
-                y = 0;
-                for (;y + BoxSize < MatrixOperation.GetColumnsCount(firstImage); y += BoxSize)
+                opticalFlow.Add(new List<double[]>(MatrixOperation.GetColumnsCount(firstImage) / BoxSize));
+                for (int y = 0; y < MatrixOperation.GetColumnsCount(firstImage) / BoxSize; y += 1)
                 {
-                    var changesByX = GetIntensityChangesByX(firstImage, y, x);
-                    var changesByY = GetIntensityChangesByY(firstImage, y, x);
-                    var changesT = GetIntensityChangesByTime(firstImage, secondImage, y, x); // TODO think to change y, x order
+                    var tmp = new[] {0.0, 0.0};
+                    opticalFlow.Last().Add(tmp);
+                }
+            }
+
+            for (int x = 0, opticalFlowX = 0;x + BoxSize < MatrixOperation.GetRowsCount(firstImage); x += BoxSize, opticalFlowX++)
+            {
+                for (int y = 0, opticalFlowY = 0;y + BoxSize < MatrixOperation.GetColumnsCount(firstImage); y += BoxSize, opticalFlowY++)
+                {
+                    var changesByX = GetIntensityChangesByX(firstImage, x, y);
+                    var changesByY = GetIntensityChangesByY(firstImage, x, y);
+                    var changesT = GetIntensityChangesByTime(firstImage, secondImage, x, y);
                     
                     var flattenChangesByX = MatrixOperation.FlattenInRows(changesByX);
                     
-                    MatrixOperation.Print2DMatrix(flattenChangesByX);
                     var flattenChangesByY = MatrixOperation.FlattenInRows(changesByY);
                     
                     var flattenChangesT = MatrixOperation.FlattenInRows(changesT);
@@ -49,8 +56,6 @@ namespace LucasKanade
 
                     if (stS[0,0]*stS[1,1]-stS[0,1]*stS[1,0] == 0)
                     {
-                        var tmp = new[] {0.0, 0.0};
-                        opticalFlow.Add(tmp);
                         continue;
                     }
 
@@ -59,7 +64,7 @@ namespace LucasKanade
 
                     var matrixVector = MatrixOperation.MatrixMultiplier(tempMatrix, flattenChangesT);
                     
-                    opticalFlow.Add(MatrixOperation.GetRow(matrixVector, 0));
+                    opticalFlow[opticalFlowX][ opticalFlowY] = (MatrixOperation.GetRow(matrixVector, 0));
                 }
             }
 
