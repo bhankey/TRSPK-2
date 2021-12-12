@@ -25,7 +25,8 @@ namespace LucasKanade
         {
             _pathToVideo = pathToVideo;
         }
-        
+
+        private byte[] byteBuffer;
         ~VideoSplitter()
         {
             if (_isLoaded)
@@ -40,9 +41,17 @@ namespace LucasKanade
             _isLoaded = false;
         }
 
+        public System.Drawing.Size GetImageSize()
+        {
+            return _file.Video.Info.FrameSize;
+        }
+
         public void LoadVideo()
         {
             _file = MediaFile.Open(_pathToVideo);
+            var size = _file.Video.Info.FrameSize;
+            byteBuffer = new byte[ImageData.EstimateStride(size.Width, ImagePixelFormat.Bgr24) * size.Height];
+            
             _isLoaded = true;
         }
 
@@ -65,6 +74,27 @@ namespace LucasKanade
 
             return true;
         }
+        
+        public bool TryGetNextFrameBuffered(out Image<Rgb24> bitmap)
+        {
+            bitmap = default;
+            if (!_isLoaded)
+            {
+                return false;
+            }
+
+            var ok = _file.Video.TryGetNextFrame(byteBuffer);
+
+            if (!ok)
+            {
+                return false;
+            }
+
+            var size = _file.Video.Info.FrameSize;
+            bitmap = ToBitmap(byteBuffer, size.Width, size.Height);
+
+            return true;
+        }
         public List<Image<Rgb24>> GetAllFrames()
         {
             if (!_isLoaded)
@@ -82,6 +112,10 @@ namespace LucasKanade
             return images;
         }
         
+        private static Image<Rgb24> ToBitmap(byte[] imageData, int width, int height)
+        {
+            return Image.LoadPixelData<Rgb24>(imageData, width, height);
+        }
         private static Image<Rgb24> ToBitmap(ImageData imageData)
         {
             return Image.LoadPixelData<Rgb24>(imageData.Data, imageData.ImageSize.Width, imageData.ImageSize.Height);

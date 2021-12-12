@@ -5,16 +5,54 @@ using System.Linq;
 
 namespace LucasKanade
 {
-    public static class LucasKanade
+    public class LucasKanade
     {
         private const int BoxSize = 9;
+
+        private double[,] changesByX;
+        private double[,] changesByY;
+        private double[,] changesT;
         
+        private double[,] flattenChangesByX;
+        private double[,] flattenChangesByY;
+        private double[,] flattenChangesT;
+
+        private double[,] matrixS;
+        private double[,] transposeMatrixS;
+        private double[,] tempMatrix;
+
+        public LucasKanade(int imageHeight, int imageWidth)
+        {
+            ImageWidth = imageWidth;
+            ImageHeight = imageHeight;
+
+            changesByX = new double[BoxSize, BoxSize];
+            changesByY = new double[BoxSize, BoxSize];
+            changesT = new double[BoxSize, BoxSize];
+
+            flattenChangesByX = new double[BoxSize * BoxSize, 1];
+            flattenChangesByY = new double[BoxSize * BoxSize, 1];
+            flattenChangesT = new double[BoxSize * BoxSize, 1];
+
+            matrixS = new double[MatrixOperation.GetRowsCount(flattenChangesByX),
+                MatrixOperation.GetColumnsCount(flattenChangesByX) +
+                MatrixOperation.GetColumnsCount(flattenChangesByY)];
+
+            transposeMatrixS = new double[MatrixOperation.GetColumnsCount(matrixS), MatrixOperation.GetRowsCount(matrixS)];
+
+            tempMatrix = new double[2, transposeMatrixS.GetLength(1)];
+        }
+
+        public int ImageWidth { get; }
+
+        public int ImageHeight { get; }
+
         public static int GetBoxSize()
         {
             return BoxSize;
         }
 
-        public static List<List<double[]>> GetOpticalFlow(double[,] firstImage, double[,] secondImage)
+        public List<List<double[]>> GetOpticalFlow(double[,] firstImage, double[,] secondImage)
         {
             if (MatrixOperation.GetRowsCount(firstImage) != MatrixOperation.GetRowsCount(secondImage)
                 || MatrixOperation.GetColumnsCount(firstImage) != MatrixOperation.GetColumnsCount(secondImage))
@@ -38,19 +76,19 @@ namespace LucasKanade
             {
                 for (int y = 0, opticalFlowY = 0;y + BoxSize < MatrixOperation.GetColumnsCount(firstImage); y += BoxSize, opticalFlowY++)
                 {
-                    var changesByX = GetIntensityChangesByX(firstImage, x, y);
-                    var changesByY = GetIntensityChangesByY(firstImage, x, y);
-                    var changesT = GetIntensityChangesByTime(firstImage, secondImage, x, y);
+                    SetIntensityChangesByX(firstImage, x, y);
+                    SetIntensityChangesByY(firstImage, x, y);
+                    SetIntensityChangesByTime(firstImage, secondImage, x, y);
                     
-                    var flattenChangesByX = MatrixOperation.FlattenInRows(changesByX);
+                    MatrixOperation.FillFlattenInRows(changesByX, flattenChangesByX);
                     
-                    var flattenChangesByY = MatrixOperation.FlattenInRows(changesByY);
+                    MatrixOperation.FillFlattenInRows(changesByY, flattenChangesByY);
                     
-                    var flattenChangesT = MatrixOperation.FlattenInRows(changesT);
+                    MatrixOperation.FillFlattenInRows(changesT, flattenChangesT);
+                    
+                    MatrixOperation.FillConcatenateByXAxis(flattenChangesByX, flattenChangesByY, matrixS);
 
-                    var matrixS = MatrixOperation.ConcatenateByXAxis(flattenChangesByX, flattenChangesByY);
-
-                    var transposeMatrixS = MatrixOperation.Transpose(matrixS);
+                    MatrixOperation.FillTranspose(matrixS, transposeMatrixS);
 
                     var stS = MatrixOperation.MatrixMultiplier(transposeMatrixS, matrixS);
 
@@ -60,7 +98,7 @@ namespace LucasKanade
                     }
 
                     var stSInv = MatrixOperation.MatrixInverse(stS);
-                    var tempMatrix = MatrixOperation.MatrixMultiplier(stSInv, transposeMatrixS);
+                    MatrixOperation.FillMatrixMultiplier(stSInv, transposeMatrixS, tempMatrix);
 
                     var matrixVector = MatrixOperation.MatrixMultiplier(tempMatrix, flattenChangesT);
                     
@@ -72,10 +110,8 @@ namespace LucasKanade
         }
 
 
-        private static double[,] GetIntensityChangesByX(double[,] image, int x, int y)
+        private void SetIntensityChangesByX(double[,] image, int x, int y)
         {
-            var result = new double[BoxSize, BoxSize];
-
             for (int i = 0; i < BoxSize; i++)
             {
                 for (int j = 0; j < BoxSize; j++)
@@ -101,17 +137,13 @@ namespace LucasKanade
                         prevValue = image[x + i, y + j - 1];
                     }
 
-                    result[i, j] = (nextValue - prevValue) / 2.0;
+                    changesByX[i, j] = (nextValue - prevValue) / 2.0;
                 }
             }
-
-            return result;
         }
         
-        private static double[,] GetIntensityChangesByY(double[,] image, int x, int y)
+        private void SetIntensityChangesByY(double[,] image, int x, int y)
         {
-            var result = new double[BoxSize, BoxSize];
-
             for (int i = 0; i < BoxSize; i++)
             {
                 for (int j = 0; j < BoxSize; j++)
@@ -138,26 +170,20 @@ namespace LucasKanade
                         prevValue = image[x + i - 1, y + j];
                     }
 
-                    result[i, j] = (nextValue - prevValue) / 2.0;
+                    changesByY[i, j] = (nextValue - prevValue) / 2.0;
                 }
             }
-
-            return result;
         }
         
-        private static double[,] GetIntensityChangesByTime(double[,] firstImage, double[,] secondImage, int x, int y)
+        private void SetIntensityChangesByTime(double[,] firstImage, double[,] secondImage, int x, int y)
         {
-            var result = new double[BoxSize, BoxSize];
-
             for (int i = 0; i < BoxSize; i++)
             {
                 for (int j = 0; j < BoxSize; j++)
                 {
-                    result[i, j] = -(secondImage[x + i, y + j] - firstImage[x + i, y + j]);
+                    changesT[i, j] = -(secondImage[x + i, y + j] - firstImage[x + i, y + j]);
                 }
             }
-
-            return result;
         }
     }
 }

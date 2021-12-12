@@ -9,6 +9,17 @@ namespace LucasKanade
         {
             return new T[rows, cols];
         }
+
+        public static void SetEmpty(double[,] matrix)
+        {
+            for (int i = 0; i < matrix.GetLength(0); ++i)
+            {
+                for (int j = 0; j < matrix.GetLength(1); ++j)
+                {
+                    matrix[i, j] = 0;
+                }
+            }
+        }
         
         public static T[,] MatrixDuplicate<T>(T[,] matrix)
         {
@@ -31,6 +42,21 @@ namespace LucasKanade
         public static int GetColumnsCount<T>(T[,] m)
         {
             return m.GetLength(1);
+        }
+        
+        
+        public static void FillTranspose<T>(T[,] matrix, T[,] trans)
+        {
+            var rowsCount = GetRowsCount(matrix);
+            var columnsCount = GetColumnsCount(matrix);
+            
+            for (int rows = 0; rows < rowsCount; rows++)
+            {
+                for (int columns = 0; columns < columnsCount; columns++)
+                {
+                    trans[columns, rows] = matrix[rows, columns];
+                }
+            }
         }
         
         // Transpose - транспонирует матрицу
@@ -65,6 +91,30 @@ namespace LucasKanade
             }
         }
 
+        public static void FillConcatenateByXAxis<T>(T[,] first, T[,] second, T[,] result)
+        {
+            if (GetRowsCount(first) != GetRowsCount(second))
+            {
+                throw new ArgumentException("matrix must have same count of axis");
+            }
+
+            var rowsCount = GetRowsCount(first);
+
+            for (int rows = 0; rows < rowsCount; rows++)
+            {
+                var columns = 0;
+                for (; columns < GetColumnsCount(first); columns++)
+                {
+                    result[rows, columns] = first[rows, columns];
+                }
+
+                for (int secondMColumns = 0; secondMColumns < GetColumnsCount(second); secondMColumns++, columns++)
+                {
+                    result[rows, columns] = second[rows, secondMColumns];
+                }
+            }
+        }
+        
         // ConcatenateByXAxis конкатенирование массиво по оси x
         public static T[,] ConcatenateByXAxis<T>(T[,] first, T[,] second)
         {
@@ -126,6 +176,24 @@ namespace LucasKanade
             return result;
         }
 
+        public static void FillerMatrixMultiplier(double[,] first, double[,] second, double[,] result)
+        {
+            if (first.GetLength(1) != second.GetLength(0))
+            {
+                throw new ArgumentException("Can't calculate bla bla bla");
+            }
+
+            for (int i = 0; i < first.GetLength(0); i++)
+            {
+                for (int j = 0; j < second.GetLength(1); j++)
+                {
+                    for (int k = 0; k < second.GetLength(0); k++)
+                    {
+                        result[i, j] += first[i, k] * second[k, j];
+                    }
+                }
+            }
+        }
         public static double[,] MatrixMultiplier(double[,] first, double[,] second)
         {
             if (first.GetLength(1) != second.GetLength(0))
@@ -147,6 +215,27 @@ namespace LucasKanade
             }
 
             return result;
+        }
+        
+        public static void FillMatrixMultiplier(double[,] first, double[,] second, double[,] result)
+        {
+            if (first.GetLength(1) != second.GetLength(0))
+            {
+                throw new ArgumentException("Can't calculate bla bla bla");
+            }
+
+            SetEmpty(result);
+            
+            for (int i = 0; i < first.GetLength(0); i++)
+            {
+                for (int j = 0; j < second.GetLength(1); j++)
+                {
+                    for (int k = 0; k < second.GetLength(0); k++)
+                    {
+                        result[i, j] += first[i, k] * second[k, j];
+                    }
+                }
+            }
         }
 
         public static double[,] MatrixInverse(double[,] matrix)
@@ -308,6 +397,17 @@ namespace LucasKanade
             return x;
         }
 
+        public static void FillFlattenInRows(double[,] matrix, double[,] result)
+        {
+            var k = 0;
+            for (int i = 0; i < matrix.GetLength(0); i++)
+            {
+                for (int j = 0; j < matrix.GetLength(1); j++)
+                {
+                    result[k++, 0] = matrix[i, j];
+                }
+            }
+        }
         public static double[,] FlattenInRows(double[,] matrix)
         {
             var flattenMatrix = new double[matrix.GetLength(0) * matrix.GetLength(1), 1];
