@@ -54,8 +54,10 @@ namespace LucasKanade
 
         public List<List<double[]>> GetOpticalFlow(double[,] firstImage, double[,] secondImage)
         {
-            if (MatrixOperation.GetRowsCount(firstImage) != MatrixOperation.GetRowsCount(secondImage)
-                || MatrixOperation.GetColumnsCount(firstImage) != MatrixOperation.GetColumnsCount(secondImage))
+            if (MatrixOperation.GetRowsCount(firstImage) != ImageWidth ||
+                MatrixOperation.GetRowsCount(secondImage) != ImageWidth ||
+                MatrixOperation.GetColumnsCount(firstImage) != ImageHeight ||
+                MatrixOperation.GetColumnsCount(secondImage) != ImageHeight)
             {
                 throw new ArgumentException("image must be same size");
             }
@@ -80,15 +82,15 @@ namespace LucasKanade
                     SetIntensityChangesByY(firstImage, x, y);
                     SetIntensityChangesByTime(firstImage, secondImage, x, y);
                     
-                    MatrixOperation.FillFlattenInRows(changesByX, flattenChangesByX);
+                    MatrixOperation.FlattenInRows(changesByX, flattenChangesByX);
                     
-                    MatrixOperation.FillFlattenInRows(changesByY, flattenChangesByY);
+                    MatrixOperation.FlattenInRows(changesByY, flattenChangesByY);
                     
-                    MatrixOperation.FillFlattenInRows(changesT, flattenChangesT);
-                    
-                    MatrixOperation.FillConcatenateByXAxis(flattenChangesByX, flattenChangesByY, matrixS);
+                    MatrixOperation.FlattenInRows(changesT, flattenChangesT);
 
-                    MatrixOperation.FillTranspose(matrixS, transposeMatrixS);
+                    MatrixOperation.ConcatenateByXAxis(flattenChangesByX, flattenChangesByY, matrixS);
+
+                    MatrixOperation.Transpose(matrixS, transposeMatrixS);
 
                     var stS = MatrixOperation.MatrixMultiplier(transposeMatrixS, matrixS);
 
@@ -98,7 +100,7 @@ namespace LucasKanade
                     }
 
                     var stSInv = MatrixOperation.MatrixInverse(stS);
-                    MatrixOperation.FillMatrixMultiplier(stSInv, transposeMatrixS, tempMatrix);
+                    MatrixOperation.MatrixMultiplier(stSInv, transposeMatrixS, tempMatrix);
 
                     var matrixVector = MatrixOperation.MatrixMultiplier(tempMatrix, flattenChangesT);
                     
