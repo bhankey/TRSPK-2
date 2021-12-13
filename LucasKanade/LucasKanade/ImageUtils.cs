@@ -41,9 +41,9 @@ namespace LucasKanade
             image.Mutate(imageContext =>
             {
                 var points = new PointF[2];
-                for (int x = 0, opticalFlowX = 0; x + LucasKanade.GetBoxSize() < image.Width; x += LucasKanade.GetBoxSize(), opticalFlowX++)
+                for (int x = 0, opticalFlowX = 0; x + boxSize < image.Width; x += boxSize, opticalFlowX++)
                 {
-                    for (int y = 0, opticalFlowY = 0;y + LucasKanade.GetBoxSize() < image.Height; y += LucasKanade.GetBoxSize(), opticalFlowY++)
+                    for (int y = 0, opticalFlowY = 0;y + boxSize < image.Height; y += boxSize, opticalFlowY++)
                     {
                         if ((float) (vector[opticalFlowX][opticalFlowY][0]) == 0.0 ||
                             (float) (vector[opticalFlowX][opticalFlowY][1]) == 0.0)
@@ -52,8 +52,8 @@ namespace LucasKanade
                         }
                         
                         points[0] = new PointF(
-                            x: x  + LucasKanade.GetBoxSize() / 2,
-                            y: y +  LucasKanade.GetBoxSize() / 2
+                            x: x  + boxSize / 2,
+                            y: y +  boxSize / 2
                         );
                         points[1] = new PointF(
                             x: (float) (points[0].X + vector[opticalFlowX][opticalFlowY][0] * LineScale),

@@ -20,6 +20,20 @@ namespace LucasKanade
                 }
             }
         }
+
+        public static double[,] ExtractSubMatrix(double[,] matrix, int startX, int endX, int startY, int endY)
+        {
+            var result = new double[endX - startX + 1, endY - startY + 1];
+            for (int i = 0; startX < endX; startX++, i++)
+            {
+                for (int j = 0;startY  < endY; startY++, j++)
+                {
+                    result[i, j] = matrix[startX, startY];
+                }
+            }
+
+            return result;
+        }
         
         public static T[,] MatrixDuplicate<T>(T[,] matrix)
         {
@@ -174,25 +188,6 @@ namespace LucasKanade
             }
 
             return result;
-        }
-
-        public static void FillerMatrixMultiplier(double[,] first, double[,] second, double[,] result)
-        {
-            if (first.GetLength(1) != second.GetLength(0))
-            {
-                throw new ArgumentException("Can't calculate bla bla bla");
-            }
-
-            for (int i = 0; i < first.GetLength(0); i++)
-            {
-                for (int j = 0; j < second.GetLength(1); j++)
-                {
-                    for (int k = 0; k < second.GetLength(0); k++)
-                    {
-                        result[i, j] += first[i, k] * second[k, j];
-                    }
-                }
-            }
         }
         public static double[,] MatrixMultiplier(double[,] first, double[,] second)
         {

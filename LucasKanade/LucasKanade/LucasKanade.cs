@@ -7,7 +7,13 @@ namespace LucasKanade
 {
     public class LucasKanade
     {
-        private const int BoxSize = 9;
+        public int BoxSize { get; }
+
+        private const int DefaultBoxSize = 9;
+        
+        public int ImageWidth { get; }
+
+        public int ImageHeight { get; }
 
         private double[,] changesByX;
         private double[,] changesByY;
@@ -21,8 +27,34 @@ namespace LucasKanade
         private double[,] transposeMatrixS;
         private double[,] tempMatrix;
 
+        public LucasKanade(int boxSize,int imageHeight, int imageWidth)
+        {
+            BoxSize = boxSize;
+            
+            ImageWidth = imageWidth;
+            ImageHeight = imageHeight;
+
+            changesByX = new double[BoxSize, BoxSize];
+            changesByY = new double[BoxSize, BoxSize];
+            changesT = new double[BoxSize, BoxSize];
+
+            flattenChangesByX = new double[BoxSize * BoxSize, 1];
+            flattenChangesByY = new double[BoxSize * BoxSize, 1];
+            flattenChangesT = new double[BoxSize * BoxSize, 1];
+
+            matrixS = new double[MatrixOperation.GetRowsCount(flattenChangesByX),
+                MatrixOperation.GetColumnsCount(flattenChangesByX) +
+                MatrixOperation.GetColumnsCount(flattenChangesByY)];
+
+            transposeMatrixS = new double[MatrixOperation.GetColumnsCount(matrixS), MatrixOperation.GetRowsCount(matrixS)];
+
+            tempMatrix = new double[2, transposeMatrixS.GetLength(1)];
+        }
+        
         public LucasKanade(int imageHeight, int imageWidth)
         {
+            BoxSize = DefaultBoxSize;
+            
             ImageWidth = imageWidth;
             ImageHeight = imageHeight;
 
@@ -43,14 +75,23 @@ namespace LucasKanade
             tempMatrix = new double[2, transposeMatrixS.GetLength(1)];
         }
 
-        public int ImageWidth { get; }
-
-        public int ImageHeight { get; }
-
-        public static int GetBoxSize()
+        private List<List<double[]>> AllocateOpticalFlowResult()
         {
-            return BoxSize;
+            var opticalFlow = new List<List<double[]>>(ImageWidth / BoxSize + 1);
+            for (int x = 0; x < ImageWidth / BoxSize + 1; x += 1)
+            {
+                opticalFlow.Add(new List<double[]>(ImageHeight / BoxSize + 1));
+                for (int y = 0; y < ImageHeight / BoxSize + 1; y += 1)
+                {
+                    var tmp = new[] {0.0, 0.0};
+                    opticalFlow.Last().Add(tmp);
+                }
+            }
+
+            return opticalFlow;
         }
+
+
 
         public List<List<double[]>> GetOpticalFlow(double[,] firstImage, double[,] secondImage)
         {
@@ -62,17 +103,7 @@ namespace LucasKanade
                 throw new ArgumentException("image must be same size");
             }
 
-
-            var opticalFlow = new List<List<double[]>>(MatrixOperation.GetRowsCount(firstImage) / BoxSize + 1);
-            for (int x = 0; x < MatrixOperation.GetRowsCount(firstImage) / BoxSize; x += 1)
-            {
-                opticalFlow.Add(new List<double[]>(MatrixOperation.GetColumnsCount(firstImage) / BoxSize));
-                for (int y = 0; y < MatrixOperation.GetColumnsCount(firstImage) / BoxSize; y += 1)
-                {
-                    var tmp = new[] {0.0, 0.0};
-                    opticalFlow.Last().Add(tmp);
-                }
-            }
+            var opticalFlow = AllocateOpticalFlowResult();
 
             for (int x = 0, opticalFlowX = 0;x + BoxSize < MatrixOperation.GetRowsCount(firstImage); x += BoxSize, opticalFlowX++)
             {
@@ -87,7 +118,7 @@ namespace LucasKanade
                     MatrixOperation.FlattenInRows(changesByY, flattenChangesByY);
                     
                     MatrixOperation.FlattenInRows(changesT, flattenChangesT);
-
+                    
                     MatrixOperation.ConcatenateByXAxis(flattenChangesByX, flattenChangesByY, matrixS);
 
                     MatrixOperation.Transpose(matrixS, transposeMatrixS);
@@ -118,26 +149,10 @@ namespace LucasKanade
             {
                 for (int j = 0; j < BoxSize; j++)
                 {
-                    var nextValue = 0.0;
-                    var prevValue = 0.0;
-
-                    if (j + 1 > BoxSize - 1)
-                    {
-                        nextValue = image[x + i, y + j];
-                    }
-                    else
-                    {
-                        nextValue = image[x + i, y + j + 1];
-                    }
-
-                    if (j - 1 < 0)
-                    {
-                        prevValue = image[x + i, y + j];
-                    }
-                    else
-                    {
-                        prevValue = image[x + i, y + j - 1];
-                    }
+                    var currentValue = image[x + i, y + j];
+                    
+                    var nextValue = j + 1 > BoxSize - 1 ? currentValue : image[x + i, y + j + 1];
+                    var prevValue = j - 1 < 0 ? currentValue : image[x + i, y + j - 1];
 
                     changesByX[i, j] = (nextValue - prevValue) / 2.0;
                 }
@@ -150,28 +165,11 @@ namespace LucasKanade
             {
                 for (int j = 0; j < BoxSize; j++)
                 {
-                    var nextValue = 0.0;
-                    var prevValue = 0.0;
                     var currentValue = image[x + i, y + j];
 
-                    if (i + 1 > BoxSize - 1)
-                    {
-                        nextValue = currentValue;
-                    }
-                    else
-                    {
-                        nextValue = image[x + i + 1, y + j];
-                    }
-
-                    if (i - 1 < 0)
-                    {
-                        prevValue = currentValue;
-                    }
-                    else
-                    {
-                        prevValue = image[x + i - 1, y + j];
-                    }
-
+                    var nextValue = i + 1 > BoxSize - 1 ? currentValue : image[x + i + 1, y + j];
+                    var prevValue = i - 1 < 0 ? currentValue : image[x + i - 1, y + j];
+                    
                     changesByY[i, j] = (nextValue - prevValue) / 2.0;
                 }
             }
