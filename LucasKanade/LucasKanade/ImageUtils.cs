@@ -7,25 +7,7 @@ using SixLabors.ImageSharp.Processing;
 namespace LucasKanade
 {
     public static class ImageUtils
-    {
-        
-        public static double[,] ToGrayScale1(Image<Rgb24> image)
-        {
-            image.Mutate(x => x.Grayscale());
-
-            var grayImage = new double[image.Width, image.Height];
-
-            for (int i = 0; i < image.Width; i++)
-            {
-                for (int j = 0; j < image.Height; j++)
-                {
-                    grayImage[i, j] = image[i, j].R;
-                }
-            }
-
-            return grayImage;
-        } 
-        
+    { 
         public static double[,] ToGrayScale(Image<Rgb24> image)
         {
             var grayImage = new double[image.Width, image.Height];
@@ -40,6 +22,17 @@ namespace LucasKanade
 
             return grayImage;
         }
+        
+        public static void ToGrayScaleBuffered(Image<Rgb24> image, double[,] buffer)
+        {
+            for (int i = 0; i < image.Width; i++)
+            {
+                for (int j = 0; j < image.Height; j++)
+                {
+                    buffer[i, j] = (image[i, j].R + image[i, j].G + image[i, j].B) / 3.0;
+                }
+            }
+        }
 
         public static float LineScale = 1;
         public static float LineWidth = 1;
@@ -47,6 +40,7 @@ namespace LucasKanade
         {
             image.Mutate(imageContext =>
             {
+                var points = new PointF[2];
                 for (int x = 0, opticalFlowX = 0; x + LucasKanade.GetBoxSize() < image.Width; x += LucasKanade.GetBoxSize(), opticalFlowX++)
                 {
                     for (int y = 0, opticalFlowY = 0;y + LucasKanade.GetBoxSize() < image.Height; y += LucasKanade.GetBoxSize(), opticalFlowY++)
@@ -57,7 +51,6 @@ namespace LucasKanade
                             continue;
                         }
                         
-                        var points = new PointF[2];
                         points[0] = new PointF(
                             x: x  + LucasKanade.GetBoxSize() / 2,
                             y: y +  LucasKanade.GetBoxSize() / 2
