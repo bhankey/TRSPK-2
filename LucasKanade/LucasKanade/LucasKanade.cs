@@ -27,6 +27,8 @@ namespace LucasKanade
         private double[,] transposeMatrixS;
         private double[,] tempMatrix;
 
+        private double[,] stS;
+        private double[,] matrixVector;
         public LucasKanade(int boxSize,int imageHeight, int imageWidth)
         {
             BoxSize = boxSize;
@@ -49,6 +51,8 @@ namespace LucasKanade
             transposeMatrixS = new double[MatrixOperation.GetColumnsCount(matrixS), MatrixOperation.GetRowsCount(matrixS)];
 
             tempMatrix = new double[2, transposeMatrixS.GetLength(1)];
+            stS = new double[transposeMatrixS.GetLength(0), matrixS.GetLength(1)];
+            matrixVector = new double[2, 1];
         }
         
         public LucasKanade(int imageHeight, int imageWidth)
@@ -73,6 +77,8 @@ namespace LucasKanade
             transposeMatrixS = new double[MatrixOperation.GetColumnsCount(matrixS), MatrixOperation.GetRowsCount(matrixS)];
 
             tempMatrix = new double[2, transposeMatrixS.GetLength(1)];
+            stS = new double[transposeMatrixS.GetLength(0), matrixS.GetLength(1)];
+            matrixVector = new double[2, 1];
         }
 
         private List<List<double[]>> AllocateOpticalFlowResult()
@@ -123,7 +129,7 @@ namespace LucasKanade
 
                     MatrixOperation.Transpose(matrixS, transposeMatrixS);
 
-                    var stS = MatrixOperation.MatrixMultiplier(transposeMatrixS, matrixS);
+                    MatrixOperation.MatrixMultiplier(transposeMatrixS, matrixS, stS);
 
                     if (stS[0,0]*stS[1,1]-stS[0,1]*stS[1,0] == 0)
                     {
@@ -132,8 +138,8 @@ namespace LucasKanade
 
                     var stSInv = MatrixOperation.MatrixInverse(stS);
                     MatrixOperation.MatrixMultiplier(stSInv, transposeMatrixS, tempMatrix);
-
-                    var matrixVector = MatrixOperation.MatrixMultiplier(tempMatrix, flattenChangesT);
+                    
+                    MatrixOperation.MatrixMultiplier(tempMatrix, flattenChangesT, matrixVector);
                     
                     opticalFlow[opticalFlowX][ opticalFlowY] = (MatrixOperation.GetRow(matrixVector, 0));
                 }

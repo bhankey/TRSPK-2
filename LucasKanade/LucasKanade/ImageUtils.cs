@@ -23,7 +23,7 @@ namespace LucasKanade
             return grayImage;
         }
         
-        public static void ToGrayScaleBuffered(Image<Rgb24> image, double[,] buffer)
+        public static void ToGrayScale(Image<Rgb24> image, double[,] buffer)
         {
             for (int i = 0; i < image.Width; i++)
             {
