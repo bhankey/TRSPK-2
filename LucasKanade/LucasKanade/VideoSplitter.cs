@@ -75,6 +75,7 @@ namespace LucasKanade
             return true;
         }
         
+        // TODO think about async
         public bool TryGetNextFrameBuffered(out Image<Rgb24> bitmap)
         {
             bitmap = default;
