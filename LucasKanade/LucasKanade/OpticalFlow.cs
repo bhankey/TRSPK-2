@@ -2,11 +2,14 @@
 using System.Diagnostics;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
+using SixLabors.ImageSharp.Processing;
 
 namespace LucasKanade
 {
     public class OpticalFlow
     {
+        private double _threshold = 0; // TODO
+        
         private VideoSplitter _splitter;
 
         private LucasKanade _lucasKanade;
@@ -52,17 +55,10 @@ namespace LucasKanade
             ImageUtils.ToGrayScale(_currentFrame, _firstImageBuffer);
             ImageUtils.ToGrayScale(frame2, _secondImageBuffer);
 
-
-           // Console.WriteLine($"time of graying {watch.ElapsedMilliseconds}ms");
-            
-            //watch.Restart();
             
             var res = _lucasKanade.GetOpticalFlow(_firstImageBuffer, _secondImageBuffer);
 
-           // Console.WriteLine($"time of algo {watch.ElapsedMilliseconds}ms\n\n");
-           // watch.Restart();
-
-            ImageUtils.DrawVectorsOnImage(_currentFrame, res, _lucasKanade.BoxSize);
+            ImageUtils.DrawVectorsOnImage(_currentFrame, res, _lucasKanade.BoxSize, _threshold);
             
             resultingFrame = _currentFrame;
             
