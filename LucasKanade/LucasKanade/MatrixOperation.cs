@@ -20,20 +20,6 @@ namespace LucasKanade
                 }
             }
         }
-
-        public static double[,] ExtractSubMatrix(double[,] matrix, int startX, int endX, int startY, int endY)
-        {
-            var result = new double[endX - startX + 1, endY - startY + 1];
-            for (int i = 0; startX < endX; startX++, i++)
-            {
-                for (int j = 0;startY  < endY; startY++, j++)
-                {
-                    result[i, j] = matrix[startX, startY];
-                }
-            }
-
-            return result;
-        }
         
         public static T[,] MatrixDuplicate<T>(T[,] matrix)
         {
@@ -59,7 +45,7 @@ namespace LucasKanade
         }
         
         
-        public static void Transpose<T>(T[,] matrix, T[,] buffer)
+        public static void FillTranspose<T>(T[,] matrix, T[,] trans)
         {
             var rowsCount = GetRowsCount(matrix);
             var columnsCount = GetColumnsCount(matrix);
@@ -68,7 +54,7 @@ namespace LucasKanade
             {
                 for (int columns = 0; columns < columnsCount; columns++)
                 {
-                    buffer[columns, rows] = matrix[rows, columns];
+                    trans[columns, rows] = matrix[rows, columns];
                 }
             }
         }
@@ -105,7 +91,7 @@ namespace LucasKanade
             }
         }
 
-        public static void ConcatenateByXAxis<T>(T[,] first, T[,] second, T[,] buffer)
+        public static void FillConcatenateByXAxis<T>(T[,] first, T[,] second, T[,] result)
         {
             if (GetRowsCount(first) != GetRowsCount(second))
             {
@@ -119,12 +105,12 @@ namespace LucasKanade
                 var columns = 0;
                 for (; columns < GetColumnsCount(first); columns++)
                 {
-                    buffer[rows, columns] = first[rows, columns];
+                    result[rows, columns] = first[rows, columns];
                 }
 
                 for (int secondMColumns = 0; secondMColumns < GetColumnsCount(second); secondMColumns++, columns++)
                 {
-                    buffer[rows, columns] = second[rows, secondMColumns];
+                    result[rows, columns] = second[rows, secondMColumns];
                 }
             }
         }
@@ -189,6 +175,25 @@ namespace LucasKanade
 
             return result;
         }
+
+        public static void FillerMatrixMultiplier(double[,] first, double[,] second, double[,] result)
+        {
+            if (first.GetLength(1) != second.GetLength(0))
+            {
+                throw new ArgumentException("Can't calculate bla bla bla");
+            }
+
+            for (int i = 0; i < first.GetLength(0); i++)
+            {
+                for (int j = 0; j < second.GetLength(1); j++)
+                {
+                    for (int k = 0; k < second.GetLength(0); k++)
+                    {
+                        result[i, j] += first[i, k] * second[k, j];
+                    }
+                }
+            }
+        }
         public static double[,] MatrixMultiplier(double[,] first, double[,] second)
         {
             if (first.GetLength(1) != second.GetLength(0))
@@ -212,14 +217,14 @@ namespace LucasKanade
             return result;
         }
         
-        public static void MatrixMultiplier(double[,] first, double[,] second, double[,] buffer)
+        public static void FillMatrixMultiplier(double[,] first, double[,] second, double[,] result)
         {
             if (first.GetLength(1) != second.GetLength(0))
             {
                 throw new ArgumentException("Can't calculate bla bla bla");
             }
 
-            SetEmpty(buffer);
+            SetEmpty(result);
             
             for (int i = 0; i < first.GetLength(0); i++)
             {
@@ -227,7 +232,7 @@ namespace LucasKanade
                 {
                     for (int k = 0; k < second.GetLength(0); k++)
                     {
-                        buffer[i, j] += first[i, k] * second[k, j];
+                        result[i, j] += first[i, k] * second[k, j];
                     }
                 }
             }
@@ -392,14 +397,14 @@ namespace LucasKanade
             return x;
         }
 
-        public static void FlattenInRows(double[,] matrix, double[,] buffer)
+        public static void FillFlattenInRows(double[,] matrix, double[,] result)
         {
             var k = 0;
             for (int i = 0; i < matrix.GetLength(0); i++)
             {
                 for (int j = 0; j < matrix.GetLength(1); j++)
                 {
-                    buffer[k++, 0] = matrix[i, j];
+                    result[k++, 0] = matrix[i, j];
                 }
             }
         }
