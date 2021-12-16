@@ -10,13 +10,13 @@ namespace LucasKanade
             return new T[rows, cols];
         }
 
-        public static void SetEmpty(double[,] matrix)
+        public static void SetEmpty<T>(T[,] matrix)
         {
             for (int i = 0; i < matrix.GetLength(0); ++i)
             {
                 for (int j = 0; j < matrix.GetLength(1); ++j)
                 {
-                    matrix[i, j] = 0;
+                    matrix[i, j] = default;
                 }
             }
         }
@@ -392,7 +392,7 @@ namespace LucasKanade
             return x;
         }
 
-        public static void FlattenInRows(double[,] matrix, double[,] buffer)
+        public static void FlattenInRows<T>(T[,] matrix, T[,] buffer)
         {
             var k = 0;
             for (int i = 0; i < matrix.GetLength(0); i++)
@@ -403,9 +403,9 @@ namespace LucasKanade
                 }
             }
         }
-        public static double[,] FlattenInRows(double[,] matrix)
+        public static T[,] FlattenInRows<T>(T[,] matrix)
         {
-            var flattenMatrix = new double[matrix.GetLength(0) * matrix.GetLength(1), 1];
+            var flattenMatrix = new T[matrix.GetLength(0) * matrix.GetLength(1), 1];
 
             var k = 0;
             for (int i = 0; i < matrix.GetLength(0); i++)
@@ -422,7 +422,7 @@ namespace LucasKanade
 
         public static void Swap2DRows<T>(T[,] a, int indexOne, int indexTwo)
         {
-            for (int i = 0; i < a.GetUpperBound(1); i++)
+            for (int i = 0; i < GetRowsCount(a); i++)
             {
                 (a[indexOne, i], a[indexTwo, i]) = (a[indexTwo, i], a[indexOne, i]);
             }
@@ -430,7 +430,7 @@ namespace LucasKanade
         
         public static void Swap2DColons<T>(T[,] a, int indexOne, int indexTwo)
         {
-            for (int i = 0; i < a.GetUpperBound(0); i++)
+            for (int i = 0; i < GetColumnsCount(a); i++)
             {
                 (a[i, indexOne], a[i, indexTwo]) = (a[i, indexTwo], a[i, indexOne]);
             }
@@ -446,6 +446,63 @@ namespace LucasKanade
             }
 
             return result;
+        }
+
+        public static T[,] FlipLeftRight<T>(T[,] matrix)
+        {
+            var result = MatrixDuplicate(matrix);
+
+            for (int i = 0; i < GetColumnsCount(matrix) / 2; i++)
+            {
+                Swap2DColons(result, i, GetColumnsCount(matrix) - 1);
+            }
+
+            return result;
+        }
+        
+        public static T[,] FlipUpDown<T>(T[,] matrix)
+        {
+            var result = MatrixDuplicate(matrix);
+
+            for (int i = 0; i < GetRowsCount(matrix) / 2; i++)
+            {
+                Swap2DRows(result, i, GetRowsCount(matrix) - 1);
+            }
+
+            return result;
+        }
+
+        public static void GetSubMatrix<T>(T[,] matrix, int x, int y, int x1, int y1, T[,] buffer)
+        {
+            for (int i = x, l = 0; i < x1; i++, l++)
+            {
+                for (int j = y, k = 0; j < y1; j++, k++)
+                {
+                    buffer[l, k] = matrix[i, j];
+                }
+            }
+        }
+
+        public static void MatrixMinus(double[,] first, double[,] second)
+        {
+            for (int i = 0; i < first.GetLength(0); i++)
+            {
+                for (int j = 0; j < first.GetLength(1); j++)
+                {
+                    first[i, j] = first[i, j] - second[i, j];
+                }
+            }
+        }
+        
+        public static void MatrixPlus(double[,] first, double[,] second)
+        {
+            for (int i = 0; i < first.GetLength(0); i++)
+            {
+                for (int j = 0; j < first.GetLength(1); j++)
+                {
+                    first[i, j] = first[i, j] + second[i, j];
+                }
+            }
         }
     }
     
