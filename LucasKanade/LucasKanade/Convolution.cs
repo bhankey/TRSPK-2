@@ -5,7 +5,7 @@ namespace LucasKanade
     public class Convolution
     {
         // isValid == true, without zero padding calculations https://stackoverflow.com/questions/37674306/what-is-the-difference-between-same-and-valid-padding-in-tf-nn-max-pool-of-t
-        public static double[,] GetConvolution(double[,] matrix, double[,] kernel, bool isValid)
+        public static double[,] GetConvolution(in double[,] matrix, double[,] kernel, bool isValid)
         {
             kernel = MatrixOperation.FlipLeftRight(kernel);
             kernel = MatrixOperation.FlipUpDown(kernel);
@@ -22,14 +22,14 @@ namespace LucasKanade
                 paddingY = dy;
             }
 
-            var correctionX = (kernel.GetLength(0) / 2) % 2 == 0 || !isValid? 0 : 1;
-            var correctionY = (kernel.GetLength(1) / 2) % 2 == 0 || !isValid? 0 : 1;
+            var correctionX = (kernel.GetLength(0) / 2) % 2 != 0 && isValid? 1 : 0;
+            var correctionY = (kernel.GetLength(1) / 2) % 2 != 0 && isValid? 1 : 0;
             
             var result = new double[matrix.GetLength(0) - paddingX - correctionX, matrix.GetLength(1) - paddingY - correctionY];
             
-            for (int i = paddingX; i < matrix.GetLength(1) - paddingX; i++)
+            for (int i = paddingX; i < matrix.GetLength(0) - paddingX; i++)
             {
-                for (int j = paddingY; j < matrix.GetLength(0) - paddingY; j++)
+                for (int j = paddingY; j < matrix.GetLength(1) - paddingY; j++)
                 {
 
                     var tmp = 0.0;
@@ -40,8 +40,8 @@ namespace LucasKanade
                             int x = j - dx + l;
                             int y = i - dy + k;
 
-                            if (x >= 0 && x < matrix.GetLength(0) &&
-                                y >= 0 && y < matrix.GetLength(1))
+                            if (y >= 0 && y < matrix.GetLength(0) &&
+                                x >= 0 && x < matrix.GetLength(1))
                                 tmp += matrix[y, x] * kernel[k, l];
                         }
                     }

@@ -111,14 +111,41 @@ namespace LucasKanade
 
             var opticalFlow = AllocateOpticalFlowResult();
 
+            double[,] changesByTImage = new double[BoxSize, BoxSize];
+            double[,] changesByXImage = new double[BoxSize, BoxSize];
+            var f = new double[,] {{-1, 1}, {-1, 1}};
+            var s = new double[,] {{-1, -1}, {1, 1}};
+                
+            var tf = new double[,] {{1, 1}, {1, 1}};
+            var ts = new double[,] {{-1, -1}, {-1, -1}};
+            
+            
             for (int x = 0, opticalFlowX = 0;x + BoxSize < MatrixOperation.GetRowsCount(firstImage); x += BoxSize, opticalFlowX++)
             {
                 for (int y = 0, opticalFlowY = 0;y + BoxSize < MatrixOperation.GetColumnsCount(firstImage); y += BoxSize, opticalFlowY++)
                 {
-                    SetIntensityChangesByX(firstImage, x, y);
-                    SetIntensityChangesByY(firstImage, x, y);
-                    SetIntensityChangesByTime(firstImage, secondImage, x, y);
-                    
+                    if ((bool) Registry.Get("convolution"))
+                    {
+                        MatrixOperation.GetSubMatrix(firstImage, x, y, x + BoxSize, y + BoxSize, changesByXImage);
+                        MatrixOperation.GetSubMatrix(secondImage, x, y, x + BoxSize, y + BoxSize, changesByTImage);
+
+                        changesByX = Convolution.GetConvolution(changesByXImage, f, true);
+                        changesByY = Convolution.GetConvolution(changesByXImage, s, true);
+
+                        changesT = Convolution.GetConvolution(changesByXImage, tf, true);
+                
+                        MatrixOperation.MatrixPlus(
+                            changesT,
+                            Convolution.GetConvolution(changesByTImage, ts, true)
+                        );
+                    }
+                    else
+                    {
+                        SetIntensityChangesByX(firstImage, x, y);
+                        SetIntensityChangesByY(firstImage, x, y);
+                        SetIntensityChangesByTime(firstImage, secondImage, x, y);
+                    }
+
                     MatrixOperation.FlattenInRows(changesByX, flattenChangesByX);
                     
                     MatrixOperation.FlattenInRows(changesByY, flattenChangesByY);
@@ -137,6 +164,11 @@ namespace LucasKanade
                     }
 
                     var stSInv = MatrixOperation.MatrixInverse(stS);
+                    
+                    if (double.IsInfinity(stSInv[0, 0]) ||double.IsInfinity(stSInv[0, 1]) || double.IsInfinity(stSInv[1, 0]) ||double.IsInfinity(stSInv[1, 1]))
+                    {
+                        continue;
+                    }
                     MatrixOperation.MatrixMultiplier(stSInv, transposeMatrixS, tempMatrix);
                     
                     MatrixOperation.MatrixMultiplier(tempMatrix, flattenChangesT, matrixVector);

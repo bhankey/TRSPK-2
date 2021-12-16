@@ -8,7 +8,7 @@ namespace LucasKanade
 {
     public class OpticalFlow
     {
-        private double _threshold = 0; // TODO
+        private double _threshold = 0.1; // TODO
         
         private VideoSplitter _splitter;
 

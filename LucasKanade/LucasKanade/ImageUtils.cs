@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Drawing.Processing;
 using SixLabors.ImageSharp.PixelFormats;
@@ -34,7 +35,7 @@ namespace LucasKanade
             }
         }
 
-        public static float LineScale = 1;
+        public static double LineScale = 1;
         public static float LineWidth = 1;
         public static void DrawVectorsOnImage(Image<Rgb24> image, List<List<double[]>> vector, int boxSize, double threshold) 
         {
@@ -46,8 +47,10 @@ namespace LucasKanade
                 {
                     for (int y = 0, opticalFlowY = 0;y + boxSize < image.Height; y += boxSize, opticalFlowY++)
                     {
-                        if ((float) (vector[opticalFlowX][opticalFlowY][0]) <= threshold ||
-                            (float) (vector[opticalFlowX][opticalFlowY][1]) <= threshold)
+                        if ((float) Math.Abs(vector[opticalFlowX][opticalFlowY][0]) <= threshold ||
+                            (float) Math.Abs(vector[opticalFlowX][opticalFlowY][1]) <= threshold ||
+                            (float) Math.Abs(vector[opticalFlowX][opticalFlowY][0]) >= 1000 ||
+                            (float) Math.Abs(vector[opticalFlowX][opticalFlowY][1]) >= 1000)
                         {
                             continue;
                         }
@@ -71,17 +74,17 @@ namespace LucasKanade
                             b: (byte) 0);
 
                         square[0] = new PointF(
-                            x: centerX + 2,
-                            y: centerY + 2);
+                            x: centerX + 1,
+                            y: centerY + 1);
                         square[1] = new PointF(
-                            x: centerX + 2,
-                            y: centerY - 2);
+                            x: centerX + 1,
+                            y: centerY - 1);
                         square[2] = new PointF(
-                            x: centerX - 2,
-                            y: centerY - 2);
+                            x: centerX - 1,
+                            y: centerY - 1 );
                         square[3] = new PointF(
-                            x: centerX - 2,
-                            y: centerY + 2);
+                            x: centerX - 1,
+                            y: centerY + 1);
                         
                         
                         var linePen = new Pen(lineColor, LineWidth);
