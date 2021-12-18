@@ -136,9 +136,9 @@ namespace LucasKanade
 
                         changesByY = Convolution.GetConvolution(changesByXImage, Convolution.StandartCoreY, (bool)Registry.Get("valid_conv"));
 
-                        changesT = Convolution.GetConvolution(changesByXImage, tf, (bool)Registry.Get("valid_conv"));
+                        changesT = Convolution.GetConvolution(changesByTImage, tf, (bool)Registry.Get("valid_conv"));
 
-                        var c = Convolution.GetConvolution(changesByTImage, ts, (bool)Registry.Get("valid_conv"));
+                        var c = Convolution.GetConvolution(changesByXImage, ts, (bool)Registry.Get("valid_conv"));
                         MatrixOperation.MatrixPlus(
                             changesT,
                             c
