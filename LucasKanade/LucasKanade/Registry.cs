@@ -7,8 +7,8 @@ namespace LucasKanade
     {
         private static readonly Dictionary<string, object> rDictionary = new()
         {
-            { "gausin_filter", 1},
-            {"convolution", true}
+            {"convolution", true},
+            {"valid_conv", false},
         };
 
         public static object Get(string key)

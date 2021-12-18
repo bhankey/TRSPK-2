@@ -35,7 +35,7 @@ namespace LucasKanade
             }
         }
 
-        public static double LineScale = 1;
+        public static double LineScale = 10 ;
         public static float LineWidth = 1;
         public static void DrawVectorsOnImage(Image<Rgb24> image, List<List<double[]>> vector, int boxSize, double threshold) 
         {

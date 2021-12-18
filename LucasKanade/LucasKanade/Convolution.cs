@@ -4,50 +4,123 @@ namespace LucasKanade
 {
     public class Convolution
     {
-        // isValid == true, without zero padding calculations https://stackoverflow.com/questions/37674306/what-is-the-difference-between-same-and-valid-padding-in-tf-nn-max-pool-of-t
-        public static double[,] GetConvolution(in double[,] matrix, double[,] kernel, bool isValid)
+        
+        // Можно играться с делением этой матрицы. Будут разные резы
+        public static double[,] StandartCoreX = new double[,]
         {
-            kernel = MatrixOperation.FlipLeftRight(kernel);
+            {-1, 1},
+            {-1, 1}
+        };
+        
+        // Можно играться с делением этой матрицы. Будут разные резы
+        public static double[,] StandartCoreY = new double[,]
+        {
+            {-1, -1},
+            {1, 1}
+        };
+        
+        public static double[,] SobelX = new double[,]
+        {
+            {1, 0, -1},
+            {2, 0, -2},
+            {1, 0, -1},
+        };
+        
+        public static double[,] SobelY = new double[,]
+        {
+            {-1, -2, -1},
+            {0, 0, 0},
+            {1, 2, 1},
+        };
+        
+        // only same conv (just backup)
+        public static double[,] GetConvolution(in double[,] matrix,in double[,] Kkernel)
+        {
+            //var kernel = MatrixOperation.MatrixDuplicate(Kkernel);
+            
+             var kernel = MatrixOperation.FlipLeftRight(Kkernel);
+             kernel = MatrixOperation.FlipUpDown(kernel);
+
+            var kernelRows = kernel.GetLength(0);
+            var kernelColms = kernel.GetLength(1);
+
+            var mRows = matrix.GetLength(0);
+            var mColms = matrix.GetLength(1);
+
+            var dx = (kernel.GetLength(0) - 1) / 2;
+            var dy = (kernel.GetLength(1) - 1) / 2;
+            
+            var result = new double[mRows, mColms];
+            
+            for (int i = 0; i < mRows; i++)
+            {
+                for (int j = 0; j < mColms; j++)
+                {
+                    for (int k = 0; k < kernelRows; k++)
+                    {
+                        for (int l = 0; l < kernelColms; l++)
+                        {
+                            int x = i  + k - dx; // - dx
+                            int y = j  + l - dy; // - dy
+
+                            if (x >= 0 && x < mRows &&
+                                y >= 0 && y < mColms)
+                                result[i, j] += matrix[x, y] * kernel[k, l];
+                        }
+                    }
+                }
+            }
+            
+            return result;
+        }
+        
+        // isValid == true, without zero padding calculations https://stackoverflow.com/questions/37674306/what-is-the-difference-between-same-and-valid-padding-in-tf-nn-max-pool-of-t
+        public static double[,] GetConvolution(in double[,] matrix,in double[,] Kkernel, bool isValid)
+        {
+            //var kernel = MatrixOperation.MatrixDuplicate(Kkernel);
+            var kernel = MatrixOperation.FlipLeftRight(Kkernel);
             kernel = MatrixOperation.FlipUpDown(kernel);
 
-            var dx = kernel.GetLength(0) / 2;
-            var dy = kernel.GetLength(1) / 2;
+            var kernelRows = kernel.GetLength(0);
+            var kernelColms = kernel.GetLength(1);
 
-            var paddingX = 0;
-            var paddingY = 0;
+            var mRows = matrix.GetLength(0);
+            var mColms = matrix.GetLength(1);
 
+            var dx = (kernel.GetLength(0) - 1) / 2;
+            var dy = (kernel.GetLength(1) - 1) / 2;
+
+           var paddingX = 0;
+           var paddingY = 0;
+           var correctionX = 0;
+           var correctionY = 0;
             if (isValid)
-            {
+            { 
+                correctionX = (kernel.GetLength(0)) % 2 == 0? 1 : 0;
+                correctionY = (kernel.GetLength(1)) % 2 == 0? 1 : 0;
+                
                 paddingX = dx;
                 paddingY = dy;
             }
 
-            var correctionX = (kernel.GetLength(0) / 2) % 2 != 0 && isValid? 1 : 0;
-            var correctionY = (kernel.GetLength(1) / 2) % 2 != 0 && isValid? 1 : 0;
+            var result = new double[mRows - (paddingX * 2) - correctionX, mColms - (paddingX * 2) - correctionY];
             
-            var result = new double[matrix.GetLength(0) - paddingX - correctionX, matrix.GetLength(1) - paddingY - correctionY];
-            
-            for (int i = paddingX; i < matrix.GetLength(0) - paddingX; i++)
+            for (int i = paddingX; i < mRows - paddingX  - correctionX; i++)
             {
-                for (int j = paddingY; j < matrix.GetLength(1) - paddingY; j++)
+                for (int j = paddingY; j < mColms - paddingY  - correctionY; j++)
                 {
-
-                    var tmp = 0.0;
-                    for (int k = 0; k < kernel.GetLength(1); k++)
+                    for (int k = 0; k < kernelRows; k++)
                     {
-                        for (int l = 0; l < kernel.GetLength(0); l++)
+                        for (int l = 0; l < kernelColms; l++)
                         {
-                            int x = j - dx + l;
-                            int y = i - dy + k;
+                            int x = i  + k - dx; 
+                            int y = j  + l - dy;
 
-                            if (y >= 0 && y < matrix.GetLength(0) &&
-                                x >= 0 && x < matrix.GetLength(1))
-                                tmp += matrix[y, x] * kernel[k, l];
+                            if (x >= 0 && x < mRows &&
+                                y >= 0 && y < mColms)
+                                result[i - paddingX, j - paddingY] += matrix[x, y] * kernel[k, l];
                         }
                     }
-
-                    result[i - paddingX, j - paddingY] = tmp;
-
                 }
             }
             
@@ -67,7 +140,15 @@ namespace LucasKanade
              */
             
             
-            var matrix = new double[,] {{3, 0, 1, 2, 7, 4}, {1, 5, 8, 9, 3, 1}, {2, 7, 2, 5, 1, 3}, {0, 1, 3, 1, 7, 8}, {4, 2, 1, 6, 2, 8} , {2, 4,5,2,3,9}}; 
+            var matrix = new double[,]
+            {
+                {3, 0, 1, 2, 7, 4},
+                {1, 5, 8, 9, 3, 1},
+                {2, 7, 2, 5, 1, 3},
+                {0, 1, 3, 1, 7, 8},
+                {4, 2, 1, 6, 2, 8},
+                {2, 4,5,2,3,9}
+            }; 
             var kernel = new double[,] {{1, 0, -1}, {1, 0, -1},  {1, 0, -1}}; 
             
             /*
@@ -75,9 +156,18 @@ namespace LucasKanade
                     10     2    -2    -3
                     0     2     4     7
                     3     2     3    16
+                    
+                    
+                         5     5     6     1    -6   -10
+                        12     5     4     0    -8   -11
+                        13    10     2    -2    -3   -11
+                        10     0     2     4     7   -10
+                        7     3     2     3    16   -12
+                         6     0     2    -1     9    -5
+
              */
             
-            var r  = Convolution.GetConvolution(matrix, kernel, true);
+            var r  = Convolution.GetConvolution(matrix, kernel, false);
         }
     }
 }
