@@ -8,7 +8,7 @@ namespace LucasKanade
 {
     public class OpticalFlow
     {
-        private double _threshold = 0.1; // TODO
+        private double _threshold = 0.05; // TODO
         
         private VideoSplitter _splitter;
 
@@ -50,13 +50,11 @@ namespace LucasKanade
                 return false;
             }
 
-           //  var watch = Stopwatch.StartNew();
-
             ImageUtils.ToGrayScale(_currentFrame, _firstImageBuffer);
             ImageUtils.ToGrayScale(frame2, _secondImageBuffer);
 
             
-            var res = _lucasKanade.GetOpticalFlow(_firstImageBuffer, _secondImageBuffer);
+            var res = _lucasKanade.GetOpticalFlow(_firstImageBuffer, _secondImageBuffer, _threshold);
 
             ImageUtils.DrawVectorsOnImage(_currentFrame, res, _lucasKanade.BoxSize, _threshold);
             

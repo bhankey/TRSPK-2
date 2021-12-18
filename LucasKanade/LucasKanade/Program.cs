@@ -11,24 +11,26 @@ namespace LucasKanade
         {
             Configuration.Default.MemoryAllocator = ArrayPoolMemoryAllocator.CreateWithAggressivePooling();
             
-            var opticalFlow = new OpticalFlow("./video/1.mp4");
+            var opticalFlow = new OpticalFlow("C:\\Users\\Sergey\\Downloads\\seq.gif");
 
             opticalFlow.Open();
             var i = 0;
             var watch = Stopwatch.StartNew();
             while (opticalFlow.TryGetNextOpticalFlowFrame(out var frame))
             {
-                Console.WriteLine($"FrameAll things time {watch.ElapsedMilliseconds}");
-                
+
                 frame.SaveAsPng($"./splitted/{i++}.png");
-                
+             
+                Console.WriteLine($"FrameAll things time {watch.ElapsedMilliseconds} {i}");
                 watch.Restart();
             }
         }
 
         static void Main(string[] args)
         {
-            MainAlgoCycle();
+           MainAlgoCycle();
+            
+           // Convolution.TestConv();
         }
     }
 }

@@ -235,163 +235,19 @@ namespace LucasKanade
 
         public static double[,] MatrixInverse(double[,] matrix)
         {
-            int n = matrix.GetLength(0);
-            var result = MatrixDuplicate(matrix);
-
-            int[] perm;
-            int toggle;
-            var lum = MatrixDecompose(matrix, out perm, out toggle);
-            if (lum == null)
-                throw new Exception("Unable to compute inverse");
-
-            double[] b = new double[n];
-            for (int i = 0; i < n; ++i)
+            var result = new double[,]
             {
-                for (int j = 0; j < n; ++j)
-                {
-                    if (i == perm[j])
-                        b[j] = 1.0;
-                    else
-                        b[j] = 0.0;
-                }
+                {matrix[1,1], -1 * matrix[0, 1]},
+                {matrix[1, 0] * - 1, matrix[0, 0]}
+            };
 
-                double[] x = HelperSolve(lum, b);
+            var det = matrix[0, 0] * matrix[1, 1] - matrix[0, 1] * matrix[1, 0];
 
-                for (int j = 0; j < n; ++j)
-                    result[j, i] = x[j];
-            }
+            MatrixMult(result, 1 / det);
 
             return result;
         }
-
-        private static double[,] MatrixDecompose(double[,] matrix, out int[] perm, out int toggle)
-        {
-            var rows = matrix.GetLength(0);
-            var cols = matrix.GetLength(1);
-
-            if (rows != cols)
-                throw new Exception("Attempt to decompose a non-square m");
-
-            var n = rows; // convenience
-
-            var result = MatrixDuplicate(matrix);
-
-            perm = new int[n]; // set up row permutation result
-            for (int i = 0; i < n; ++i)
-            {
-                perm[i] = i;
-            }
-
-            toggle = 1; // toggle tracks row swaps.
-            // +1 -greater-than even, -1 -greater-than odd. used by MatrixDeterminant
-
-            for (int j = 0; j < n - 1; ++j) // each column
-            {
-                var colMax = Math.Abs(result[j, j]); // find largest val in col
-                var pRow = j;
-                //for (int i = j + 1; i < n; ++i)
-                //{
-                //  if (result[i][j] > colMax)
-                //  {
-                //    colMax = result[i][j];
-                //    pRow = i;
-                //  }
-                //}
-
-                // reader Matt V needed this:
-                for (int i = j + 1; i < n; ++i)
-                {
-                    if (Math.Abs(result[i,j]) > colMax)
-                    {
-                        colMax = Math.Abs(result[i, j]);
-                        pRow = i;
-                    }
-                }
-                // Not sure if this approach is needed always, or not.
-
-                if (pRow != j) // if largest value not on pivot, swap rows
-                {
-                    Swap2DRows(result,pRow, j);
-
-                    (perm[pRow], perm[j]) = (perm[j], perm[pRow]);
-
-                    toggle = -toggle; // adjust the row-swap toggle
-                }
-
-                // --------------------------------------------------
-                // This part added later (not in original)
-                // and replaces the 'return null' below.
-                // if there is a 0 on the diagonal, find a good row
-                // from i = j+1 down that doesn't have
-                // a 0 in column j, and swap that good row with row j
-                // --------------------------------------------------
-
-                if (result[j, j] == 0.0)
-                {
-                    // find a good row to swap
-                    int goodRow = -1;
-                    for (int row = j + 1; row < n; ++row)
-                    {
-                        if (result[row, j] != 0.0)
-                            goodRow = row;
-                    }
-
-                    if (goodRow == -1)
-                        throw new Exception("Cannot use Doolittle's method");
-
-                    // swap rows so 0.0 no longer on diagonal
-                    Swap2DRows(result, goodRow, j);
-
-                    (perm[goodRow], perm[j]) = (perm[j], perm[goodRow]);
-
-                    toggle = -toggle; // adjust the row-swap toggle
-                }
-                // --------------------------------------------------
-                // if diagonal after swap is zero . .
-                //if (Math.Abs(result[j][j]) less-than 1.0E-20) 
-                //  return null; // consider a throw
-
-                for (int i = j + 1; i < n; ++i)
-                {
-                    result[i, j] /= result[j, j];
-                    for (int k = j + 1; k < n; ++k)
-                    {
-                        result[i, k] -= result[i, j] * result[j, k];
-                    }
-                }
-            } // main j column loop
-
-            return result;
-        } // MatrixDecompose
         
-        private static double[] HelperSolve(double[,] luMatrix, double[] b)
-        {
-            // before calling this helper, permute b using the perm array
-            // from MatrixDecompose that generated luMatrix
-            int n = luMatrix.GetLength(0);
-            double[] x = new double[n];
-            b.CopyTo(x, 0);
-
-            for (int i = 1; i < n; ++i)
-            {
-                double sum = x[i];
-                for (int j = 0; j < i; ++j)
-                    sum -= luMatrix[i, j] * x[j];
-                x[i] = sum;
-            }
-
-            x[n - 1] /= luMatrix[n - 1, n - 1];
-            for (int i = n - 2; i >= 0; --i)
-            {
-                double sum = x[i];
-                for (int j = i + 1; j < n; ++j)
-                    sum -= luMatrix[i,j] * x[j];
-                x[i] = sum / luMatrix[i, i];
-            }
-
-            return x;
-        }
-
         public static void FlattenInRows<T>(T[,] matrix, T[,] buffer)
         {
             var k = 0;
@@ -448,13 +304,13 @@ namespace LucasKanade
             return result;
         }
 
-        public static T[,] FlipLeftRight<T>(T[,] matrix)
+        public static T[,] FlipLeftRight<T>(in T[,] matrix)
         {
             var result = MatrixDuplicate(matrix);
 
             for (int i = 0; i < GetColumnsCount(matrix) / 2; i++)
             {
-                Swap2DColons(result, i, GetColumnsCount(matrix) - 1);
+                Swap2DColons(result, i, GetColumnsCount(matrix) - i - 1);
             }
 
             return result;
@@ -466,7 +322,7 @@ namespace LucasKanade
 
             for (int i = 0; i < GetRowsCount(matrix) / 2; i++)
             {
-                Swap2DRows(result, i, GetRowsCount(matrix) - 1);
+                Swap2DRows(result, i, GetRowsCount(matrix) - i - 1);
             }
 
             return result;
@@ -500,9 +356,64 @@ namespace LucasKanade
             {
                 for (int j = 0; j < first.GetLength(1); j++)
                 {
-                    first[i, j] = first[i, j] + second[i, j];
+                    first[i, j] += second[i, j];
                 }
             }
+        }
+        
+        public static void MatrixDiv(double[,] first, double div)
+        {
+            for (int i = 0; i < first.GetLength(0); i++)
+            {
+                for (int j = 0; j < first.GetLength(1); j++)
+                {
+                    first[i, j] /= div;
+                }
+            }
+        }
+        
+        public static void MatrixMult(double[,] first, double m)
+        {
+            for (int i = 0; i < first.GetLength(0); i++)
+            {
+                for (int j = 0; j < first.GetLength(1); j++)
+                {
+                    first[i, j] *= m;
+                }
+            }
+        }
+        
+        // с.з
+        public static double[] GetBasis(double[, ] matrix)
+        {
+            double a = matrix[0,0];
+            double b = matrix[0,1];
+            double c = matrix[1,0];
+            double d = matrix[1,1];
+
+            double eigenvalue1 = ((a+d) + Math.Sqrt( Math.Pow(a-d,2) + 4*b*c))/2;
+            double eigenvalue2 = ((a+d) - Math.Sqrt( Math.Pow(a-d,2) + 4*b*c))/2;
+
+            // Вектор с базисом
+            double[] basis = new double[2];
+
+            for (double y = -1000; y <= 1000; y++) {
+                for (double x = -1000; x <= 1000; x++) {
+                    if (((a-eigenvalue1)*x + b*y == 0) && (c*x + (d-eigenvalue1)*y == 0)) {
+                        basis[0] = eigenvalue1;
+                    }
+                }
+            }   
+
+            for (double y = -10; y <= 10; y++) {
+                for (double x = -10; x <= 10; x++) {
+                    if (((a-eigenvalue2)*x + b*y == 0) && (c*x + (d-eigenvalue2)*y == 0)) {
+                        basis[1] = eigenvalue2;
+                    }
+                }
+            }
+
+            return basis;
         }
     }
     

@@ -9,7 +9,7 @@ namespace LucasKanade
     {
         public int BoxSize { get; }
 
-        private const int DefaultBoxSize = 9;
+        private const int DefaultBoxSize = 15;
         
         public int ImageWidth { get; }
 
@@ -99,7 +99,7 @@ namespace LucasKanade
 
 
 
-        public List<List<double[]>> GetOpticalFlow(double[,] firstImage, double[,] secondImage)
+        public List<List<double[]>> GetOpticalFlow(double[,] firstImage, double[,] secondImage, double _threshold)
         {
             if (MatrixOperation.GetRowsCount(firstImage) != ImageWidth ||
                 MatrixOperation.GetRowsCount(secondImage) != ImageWidth ||
@@ -113,12 +113,15 @@ namespace LucasKanade
 
             double[,] changesByTImage = new double[BoxSize, BoxSize];
             double[,] changesByXImage = new double[BoxSize, BoxSize];
-            var f = new double[,] {{-1, 1}, {-1, 1}};
-            var s = new double[,] {{-1, -1}, {1, 1}};
-                
+
             var tf = new double[,] {{1, 1}, {1, 1}};
             var ts = new double[,] {{-1, -1}, {-1, -1}};
             
+            MatrixOperation.MatrixDiv(tf, 1); // c этим коэф можно тоже поиграться
+            MatrixOperation.MatrixDiv(ts, 1);
+            
+            MatrixOperation.MatrixDiv(firstImage, 255); // нормализуем изображение
+            MatrixOperation.MatrixDiv(secondImage, 255); // нормализуем изображение
             
             for (int x = 0, opticalFlowX = 0;x + BoxSize < MatrixOperation.GetRowsCount(firstImage); x += BoxSize, opticalFlowX++)
             {
@@ -129,14 +132,16 @@ namespace LucasKanade
                         MatrixOperation.GetSubMatrix(firstImage, x, y, x + BoxSize, y + BoxSize, changesByXImage);
                         MatrixOperation.GetSubMatrix(secondImage, x, y, x + BoxSize, y + BoxSize, changesByTImage);
 
-                        changesByX = Convolution.GetConvolution(changesByXImage, f, true);
-                        changesByY = Convolution.GetConvolution(changesByXImage, s, true);
+                        changesByX = Convolution.GetConvolution(changesByXImage, Convolution.StandartCoreX, (bool)Registry.Get("valid_conv"));
 
-                        changesT = Convolution.GetConvolution(changesByXImage, tf, true);
-                
+                        changesByY = Convolution.GetConvolution(changesByXImage, Convolution.StandartCoreY, (bool)Registry.Get("valid_conv"));
+
+                        changesT = Convolution.GetConvolution(changesByXImage, tf, (bool)Registry.Get("valid_conv"));
+
+                        var c = Convolution.GetConvolution(changesByTImage, ts, (bool)Registry.Get("valid_conv"));
                         MatrixOperation.MatrixPlus(
                             changesT,
-                            Convolution.GetConvolution(changesByTImage, ts, true)
+                            c
                         );
                     }
                     else
@@ -162,6 +167,14 @@ namespace LucasKanade
                     {
                         continue;
                     }
+                    
+                    // Вычисление собственных значений для фильтрции, но у меня не прокатило
+                    //var basis = (MatrixOperation.GetBasis(stS));
+
+                    // if (Math.Max(Math.Abs(basis[0]), Math.Abs(basis[1])) <= 0.01)
+                    // {
+                    //     continue;
+                    // }
 
                     var stSInv = MatrixOperation.MatrixInverse(stS);
                     
@@ -169,9 +182,15 @@ namespace LucasKanade
                     {
                         continue;
                     }
+                    
                     MatrixOperation.MatrixMultiplier(stSInv, transposeMatrixS, tempMatrix);
                     
                     MatrixOperation.MatrixMultiplier(tempMatrix, flattenChangesT, matrixVector);
+
+                    if (Math.Abs(matrixVector[0, 0]) < _threshold || Math.Abs(matrixVector[1, 0]) < _threshold)
+                    {
+                        continue;
+                    }
                     
                     opticalFlow[opticalFlowX][ opticalFlowY] = (MatrixOperation.GetRow(matrixVector, 0));
                 }
