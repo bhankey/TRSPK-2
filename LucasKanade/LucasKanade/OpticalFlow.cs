@@ -46,7 +46,7 @@ namespace LucasKanade
 
         public void Open()
         {
-            _lucasKanade = new LucasKanade(_height,_width);
+            _lucasKanade = new LucasKanade(_height,_width, (int)Registry.Get("box_size"));
         }
 
         public void TryGetNextOpticalFlowFrame(in Image<Rgb24> frame, in Image<Rgb24> nextFrame, out Image<Rgb24> resultingFrame) 
@@ -62,7 +62,13 @@ namespace LucasKanade
             ImageUtils.ToGrayScale(frame, _firstImageBuffer);
             ImageUtils.ToGrayScale(nextFrame, _secondImageBuffer);
             
-            var res = _lucasKanade.GetOpticalFlow(_firstImageBuffer, _secondImageBuffer, _threshold);
+            var res = _lucasKanade.GetOpticalFlow(
+                _firstImageBuffer,
+                _secondImageBuffer,
+                _threshold, 
+                (int)Registry.Get("interval_between_points"),
+                (int)Registry.Get("convolution_coefficient")
+                );
 
             resultingFrame = frame.Clone();
             

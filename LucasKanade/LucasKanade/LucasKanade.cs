@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-
 
 namespace LucasKanade
 {
@@ -63,7 +61,7 @@ namespace LucasKanade
             // changesByXImage = new double[ImageWidth, ImageHeight];
         }
         
-        public List<FlowPoints> GetOpticalFlow(double[,] firstImage, double[,] secondImage, double threshold, int interval = 15)
+        public List<FlowPoints> GetOpticalFlow(double[,] firstImage, double[,] secondImage, double threshold, int interval = 15, int convolutionCoefficient = 1)
         {
             if (MatrixOperation.GetRowsCount(firstImage) != ImageWidth ||
                 MatrixOperation.GetRowsCount(secondImage) != ImageWidth ||
@@ -74,17 +72,23 @@ namespace LucasKanade
             }
 
             var opticalFlow = new List<FlowPoints>();
+
+            if ((bool) Registry.Get("convolution_on_all_image") && (bool) Registry.Get("convolution"))
+            {
+                changesByXImage = Convolution.GetConvolution(firstImage, Convolution.StandartCoreXLol,
+                    (bool) Registry.Get("valid_conv"), convolutionCoefficient);
+
+                changesByYImage = Convolution.GetConvolution(firstImage, Convolution.StandartCoreYLol,
+                    (bool) Registry.Get("valid_conv"), convolutionCoefficient);
+
+                changesByTImage = Convolution.GetConvolution(secondImage, Convolution.Smooth2x2,
+                    (bool) Registry.Get("valid_conv"), convolutionCoefficient);
+                
+                MatrixOperation.MatrixPlus(
+                    changesByTImage, 
+                    Convolution.GetConvolution(firstImage, Convolution.Smooth2x2Opposite, (bool)Registry.Get("valid_conv"), convolutionCoefficient));
+            }
             
-            double[,] changesByXImage = Convolution.GetConvolution(firstImage, Convolution.StandartCoreXLol, (bool)Registry.Get("valid_conv"), 4);
-
-            double[,] changesByYImage  = Convolution.GetConvolution(firstImage, Convolution.StandartCoreYLol, (bool)Registry.Get("valid_conv"), 4);
-
-            double[,] changesByTImage = Convolution.GetConvolution(secondImage, Convolution.Smooth2x2, (bool)Registry.Get("valid_conv"), 4);
-
-            MatrixOperation.MatrixPlus(
-                changesByTImage, 
-                Convolution.GetConvolution(firstImage, Convolution.Smooth2x2Opposite, (bool)Registry.Get("valid_conv"), 4));
-
             MatrixOperation.MatrixDiv(firstImage, 255); // нормализуем изображение
             MatrixOperation.MatrixDiv(secondImage, 255); // нормализуем изображение
             
@@ -94,10 +98,32 @@ namespace LucasKanade
                 {
                     if ((bool) Registry.Get("convolution"))
                     {
-                      MatrixOperation.GetSubMatrix(changesByXImage, x, y, x + BoxSize, y + BoxSize, changesByX);
-                        MatrixOperation.GetSubMatrix(changesByYImage, x, y, x + BoxSize, y + BoxSize, changesByY);
+                        if ((bool) Registry.Get("convolution_on_all_image"))
+                        {
+                            MatrixOperation.GetSubMatrix(changesByXImage, x, y, x + BoxSize, y + BoxSize, changesByX);
+                            MatrixOperation.GetSubMatrix(changesByYImage, x, y, x + BoxSize, y + BoxSize, changesByY);
+                            MatrixOperation.GetSubMatrix(changesByTImage, x, y, x + BoxSize, y + BoxSize, changesT);
+                        }
+                        else
+                        {
+                            double[,] changesByTImage = new double[BoxSize, BoxSize];
+                            double[,] changesByXImage = new double[BoxSize, BoxSize];
+                            
+                            MatrixOperation.GetSubMatrix(firstImage, x, y, x + BoxSize, y + BoxSize, changesByXImage);
+                            MatrixOperation.GetSubMatrix(secondImage, x, y, x + BoxSize, y + BoxSize, changesByTImage);
 
-                        MatrixOperation.GetSubMatrix(changesByTImage, x, y, x + BoxSize, y + BoxSize, changesT);
+                            changesByX = Convolution.GetConvolution(changesByXImage, Convolution.StandartCoreXLol, (bool)Registry.Get("valid_conv"), convolutionCoefficient);
+
+                            changesByY = Convolution.GetConvolution(changesByXImage, Convolution.StandartCoreYLol, (bool)Registry.Get("valid_conv"), convolutionCoefficient);
+
+                            changesT = Convolution.GetConvolution(changesByTImage, Convolution.Smooth2x2, (bool)Registry.Get("valid_conv"), convolutionCoefficient);
+
+                            var c = Convolution.GetConvolution(changesByXImage, Convolution.Smooth2x2Opposite, (bool)Registry.Get("valid_conv"), convolutionCoefficient);
+                            MatrixOperation.MatrixPlus(
+                                changesT,
+                                c
+                            );
+                        }
 
                     }
                     else
@@ -125,14 +151,6 @@ namespace LucasKanade
                     {
                         continue;
                     }
-                    
-                    // Вычисление собственных значений для фильтрции, но у меня не прокатило
-                    //var basis = (MatrixOperation.GetBasis(stS));
-
-                    // if (Math.Max(Math.Abs(basis[0]), Math.Abs(basis[1])) <= 0.01)
-                    // {
-                    //     continue;
-                    // }
 
                     var stSInv = MatrixOperation.MatrixInverse(stS);
                     
