@@ -98,7 +98,7 @@ namespace LucasKanade
             {
                 for (int columns = 0; columns < GetColumnsCount(matrix); columns++)
                 {
-                    Console.Write($"{matrix[rows, columns]} ");
+                    Console.Write($"{matrix[rows, columns].ToString().Replace(',','.' )} ");
                 }
 
                 Console.Write(Environment.NewLine + Environment.NewLine);

@@ -6,6 +6,23 @@ using SixLabors.ImageSharp.Processing;
 
 namespace LucasKanade
 {
+    
+    public struct FlowPoints
+    {
+        public int X;
+        public int Y;
+        public double XDirection;
+        public double YDirection;
+
+        public FlowPoints(int x, int y, double xDirection, double yDirection)
+        {
+            X = x;
+            Y = y;
+            XDirection = xDirection;
+            YDirection = yDirection;
+        }
+    }
+    
     public class OpticalFlow
     {
         private double _threshold = 0.05; // TODO
@@ -49,6 +66,12 @@ namespace LucasKanade
             {
                 return false;
             }
+
+            // frame2 = Image.Load<Rgb24>(".\\2.png");
+            // _currentFrame = Image.Load<Rgb24>(".\\1.png");
+            //
+            // frame2.SaveAsPng("./conv.png");
+            //Convolution.GetConvolution(frame2,Convolution.StandartCoreY , false, 1).SaveAsPng("./conv.png");
 
             ImageUtils.ToGrayScale(_currentFrame, _firstImageBuffer);
             ImageUtils.ToGrayScale(frame2, _secondImageBuffer);

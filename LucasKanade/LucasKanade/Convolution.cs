@@ -21,6 +21,21 @@ namespace LucasKanade
             {1, 1}
         };
         
+        
+        // Можно играться с делением этой матрицы. Будут разные резы
+        public static double[,] StandartCoreXLol = new double[,]
+        {
+            {1, 1},
+            {-1, -1}
+        };
+        
+        // Можно играться с делением этой матрицы. Будут разные резы
+        public static double[,] StandartCoreYLol = new double[,]
+        {
+            {1, -1},
+            {1, -1}
+        };
+        
         public static double[,] SobelX = new double[,]
         {
             {1, 0, -1},
@@ -47,6 +62,18 @@ namespace LucasKanade
             {1, 0, -1},
             {0, 0, 0},
             {-1, 0, 1},
+        };
+
+        public static double[,] Smooth2x2 = new double[,]
+        {
+            {1, 1},
+            {1, 1}
+        };
+        
+        public static double[,] Smooth2x2Opposite = new double[,]
+        {
+            {-1, -1},
+            {-1, -1}
         };
         
         
@@ -126,6 +153,8 @@ namespace LucasKanade
             {
                 for (int j = paddingY; j < mColms - paddingY  - correctionY; j++)
                 {
+
+                    var tmp = 0.0;
                     for (int k = 0; k < kernelRows; k++)
                     {
                         for (int l = 0; l < kernelColms; l++)
@@ -136,10 +165,12 @@ namespace LucasKanade
                             if (x >= 0 && x < mRows &&
                                 y >= 0 && y < mColms)
                             {
-                                result[i - paddingX, j - paddingY] += matrix[x, y] * kernel[k, l] / c;
+                                tmp += matrix[x, y] * kernel[k, l] / c;
                             }
                         }
                     }
+
+                    result[i - paddingX, j - paddingY] = tmp;
                 }
             }
             
