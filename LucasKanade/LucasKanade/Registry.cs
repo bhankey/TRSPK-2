@@ -9,6 +9,7 @@ namespace LucasKanade
         {
             {"convolution", true},
             {"valid_conv", false},
+            {"convolution_on_all_image", true}
         };
 
         public static object Get(string key)

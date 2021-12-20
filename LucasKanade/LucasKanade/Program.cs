@@ -10,19 +10,37 @@ namespace LucasKanade
         static void MainAlgoCycle()
         {
             Configuration.Default.MemoryAllocator = ArrayPoolMemoryAllocator.CreateWithAggressivePooling();
-            
-            var opticalFlow = new OpticalFlow(".\\video\\seq.gif");
 
-            opticalFlow.Open();
-            var i = 0;
-            var watch = Stopwatch.StartNew();
-            while (opticalFlow.TryGetNextOpticalFlowFrame(out var frame))
+            using (var splitter = new VideoSplitter(".\\video\\seq.gif"))
             {
+                splitter.LoadVideo();
 
-                frame.SaveAsPng($"./splitted/{i++}.png");
+                var size = splitter.GetImageSize();
+                var opticalFlow = new OpticalFlow(size.Height, size.Width);
 
-                Console.WriteLine($"FrameAll things time {watch.ElapsedMilliseconds} {i}");
-                watch.Restart();
+                opticalFlow.Open();
+
+                var i = 0;
+
+                var watch = Stopwatch.StartNew();
+
+                if (!splitter.TryGetNextFrame(out var frame))
+                {
+                    throw new ArgumentException("too short video");
+                }
+
+                while (splitter.TryGetNextFrame(out var nextFrame))
+                {
+                    opticalFlow.TryGetNextOpticalFlowFrame(frame, nextFrame, out var result);
+
+                    result.SaveAsPng($"./splitted/{i++}.png");
+
+                    Console.WriteLine($"FrameAll things time {watch.ElapsedMilliseconds} {i}");
+
+                    frame = nextFrame;
+
+                    watch.Restart();
+                }
             }
         }
 

@@ -27,65 +27,46 @@ namespace LucasKanade
     {
         private double _threshold = 0.05; // TODO
         
-        private VideoSplitter _splitter;
-
         private LucasKanade _lucasKanade;
 
-        private Image<Rgb24> _currentFrame;
+        private int _width;
+        private int _height;
 
         private double[,] _firstImageBuffer;
         private double[,] _secondImageBuffer;
 
-        public OpticalFlow(string videoPath)
+        public OpticalFlow(int height, int width)
         {
-            var splitter = new VideoSplitter(videoPath);
-
-            splitter.LoadVideo();
-
-            _splitter = splitter;
+            _width = width;
+            _height = height;
+            
+            _firstImageBuffer = new double[width, height];
+            _secondImageBuffer = new double[width, height];
         }
 
         public void Open()
         {
-            if (!_splitter.TryGetNextFrameBuffered(out _currentFrame))
-            {
-                throw new ArgumentException("too short video");
-            }
-
-            _lucasKanade = new LucasKanade(_currentFrame.Height, _currentFrame.Width);
-
-            _firstImageBuffer = new double[_currentFrame.Width, _currentFrame.Height];
-            _secondImageBuffer = new double[_currentFrame.Width, _currentFrame.Height];
+            _lucasKanade = new LucasKanade(_height,_width);
         }
 
-        public bool TryGetNextOpticalFlowFrame(out Image<Rgb24> resultingFrame)
+        public void TryGetNextOpticalFlowFrame(in Image<Rgb24> frame, in Image<Rgb24> nextFrame, out Image<Rgb24> resultingFrame) 
         {
             resultingFrame = default;
 
-            if (!_splitter.TryGetNextFrameBuffered(out var frame2))
+            if (_width != frame.Width || _width != nextFrame.Width ||
+                _height != frame.Height || _height != nextFrame.Height)
             {
-                return false;
+                throw new ArgumentException("bla bla"); // TODO
             }
 
-            // frame2 = Image.Load<Rgb24>(".\\2.png");
-            // _currentFrame = Image.Load<Rgb24>(".\\1.png");
-            //
-            // frame2.SaveAsPng("./conv.png");
-            //Convolution.GetConvolution(frame2,Convolution.StandartCoreY , false, 1).SaveAsPng("./conv.png");
-
-            ImageUtils.ToGrayScale(_currentFrame, _firstImageBuffer);
-            ImageUtils.ToGrayScale(frame2, _secondImageBuffer);
-
+            ImageUtils.ToGrayScale(frame, _firstImageBuffer);
+            ImageUtils.ToGrayScale(nextFrame, _secondImageBuffer);
             
             var res = _lucasKanade.GetOpticalFlow(_firstImageBuffer, _secondImageBuffer, _threshold);
 
-            ImageUtils.DrawVectorsOnImage(_currentFrame, res, _lucasKanade.BoxSize, _threshold);
+            resultingFrame = frame.Clone();
             
-            resultingFrame = _currentFrame;
-            
-            _currentFrame = frame2;
-
-            return true;
+            ImageUtils.DrawVectorsOnImage(resultingFrame, res, _lucasKanade.BoxSize, _threshold);
         }
     }
 }

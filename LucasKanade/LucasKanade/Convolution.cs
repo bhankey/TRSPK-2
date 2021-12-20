@@ -76,52 +76,9 @@ namespace LucasKanade
             {-1, -1}
         };
         
-        
-        // only same conv (just backup)
-        public static double[,] GetConvolution(in double[,] matrix,in double[,] Kkernel)
-        {
-            //var kernel = MatrixOperation.MatrixDuplicate(Kkernel);
-            
-             var kernel = MatrixOperation.FlipLeftRight(Kkernel);
-             kernel = MatrixOperation.FlipUpDown(kernel);
-
-            var kernelRows = kernel.GetLength(0);
-            var kernelColms = kernel.GetLength(1);
-
-            var mRows = matrix.GetLength(0);
-            var mColms = matrix.GetLength(1);
-
-            var dx = (kernel.GetLength(0) - 1) / 2;
-            var dy = (kernel.GetLength(1) - 1) / 2;
-            
-            var result = new double[mRows, mColms];
-            
-            for (int i = 0; i < mRows; i++)
-            {
-                for (int j = 0; j < mColms; j++)
-                {
-                    for (int k = 0; k < kernelRows; k++)
-                    {
-                        for (int l = 0; l < kernelColms; l++)
-                        {
-                            int x = i  + k - dx; // - dx
-                            int y = j  + l - dy; // - dy
-
-                            if (x >= 0 && x < mRows &&
-                                y >= 0 && y < mColms)
-                                result[i, j] += matrix[x, y] * kernel[k, l];
-                        }
-                    }
-                }
-            }
-            
-            return result;
-        }
-        
         // isValid == true, without zero padding calculations https://stackoverflow.com/questions/37674306/what-is-the-difference-between-same-and-valid-padding-in-tf-nn-max-pool-of-t
         public static double[,] GetConvolution(in double[,] matrix,in double[,] Kkernel, bool isValid, int c = 1)
         {
-            //var kernel = MatrixOperation.MatrixDuplicate(Kkernel);
             var kernel = MatrixOperation.FlipLeftRight(Kkernel);
             kernel = MatrixOperation.FlipUpDown(kernel);
 

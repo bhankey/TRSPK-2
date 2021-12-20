@@ -8,13 +8,11 @@ using Image = SixLabors.ImageSharp.Image;
 
 namespace LucasKanade
 {
-    // Чтобы этот класс заработал надо убить кучу времени, ибо доки к либам очень плохие на C#.
-    // Необходимо, чтобы были установлены нужные пакеты и наличие папки /runtimes/win-x64/native
-    // (P.S в доке про эту папка ничего нет, слава животворящему дебагу)
+    // Дока говно - куча время))
     // Если что-то не работает, то поставьте сборку только для x64
     
     // TODO можно доработать класс для работы с потоком
-    public class VideoSplitter
+    public class VideoSplitter: IDisposable
     {
         private string _pathToVideo;
 
@@ -27,20 +25,7 @@ namespace LucasKanade
         }
 
         private byte[] byteBuffer;
-        ~VideoSplitter()
-        {
-            if (_isLoaded)
-            {
-                _file.Dispose();
-            }
-        }
         
-        public void Clean()
-        {
-            _file.Dispose();
-            _isLoaded = false;
-        }
-
         public System.Drawing.Size GetImageSize()
         {
             return _file.Video.Info.FrameSize;
@@ -54,29 +39,9 @@ namespace LucasKanade
             
             _isLoaded = true;
         }
-
-        public bool TryGetNextFrame(out Image<Rgb24> bitmap)
-        {
-            bitmap = default;
-            if (!_isLoaded)
-            {
-                return false;
-            }
-
-            var ok = _file.Video.TryGetNextFrame(out var imageData);
-
-            if (!ok)
-            {
-                return false;
-            }
-
-            bitmap = ToBitmap(imageData);
-
-            return true;
-        }
         
         // TODO think about async
-        public bool TryGetNextFrameBuffered(out Image<Rgb24> bitmap)
+        public bool TryGetNextFrame(out Image<Rgb24> bitmap)
         {
             bitmap = default;
             if (!_isLoaded)
@@ -120,6 +85,13 @@ namespace LucasKanade
         private static Image<Rgb24> ToBitmap(ImageData imageData)
         {
             return Image.LoadPixelData<Rgb24>(imageData.Data, imageData.ImageSize.Width, imageData.ImageSize.Height);
+        }
+
+        public void Dispose()
+        {
+            _file?.Dispose();
+            
+            GC.SuppressFinalize(this);
         }
     }
 }
