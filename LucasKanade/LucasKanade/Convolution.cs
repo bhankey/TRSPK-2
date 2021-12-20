@@ -1,4 +1,6 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.PixelFormats;
 
 namespace LucasKanade
 {
@@ -19,6 +21,21 @@ namespace LucasKanade
             {1, 1}
         };
         
+        
+        // Можно играться с делением этой матрицы. Будут разные резы
+        public static double[,] StandartCoreXLol = new double[,]
+        {
+            {1, 1},
+            {-1, -1}
+        };
+        
+        // Можно играться с делением этой матрицы. Будут разные резы
+        public static double[,] StandartCoreYLol = new double[,]
+        {
+            {1, -1},
+            {1, -1}
+        };
+        
         public static double[,] SobelX = new double[,]
         {
             {1, 0, -1},
@@ -32,6 +49,33 @@ namespace LucasKanade
             {0, 0, 0},
             {1, 2, 1},
         };
+        
+        public static double[,] Smooth = new double[,]
+        {
+            {1, 1, 1},
+            {1, 1, 1},
+            {1, 1, 1},
+        };
+
+        public static double[,] EdgeDetection = new double[,]
+        {
+            {1, 0, -1},
+            {0, 0, 0},
+            {-1, 0, 1},
+        };
+
+        public static double[,] Smooth2x2 = new double[,]
+        {
+            {1, 1},
+            {1, 1}
+        };
+        
+        public static double[,] Smooth2x2Opposite = new double[,]
+        {
+            {-1, -1},
+            {-1, -1}
+        };
+        
         
         // only same conv (just backup)
         public static double[,] GetConvolution(in double[,] matrix,in double[,] Kkernel)
@@ -75,7 +119,7 @@ namespace LucasKanade
         }
         
         // isValid == true, without zero padding calculations https://stackoverflow.com/questions/37674306/what-is-the-difference-between-same-and-valid-padding-in-tf-nn-max-pool-of-t
-        public static double[,] GetConvolution(in double[,] matrix,in double[,] Kkernel, bool isValid)
+        public static double[,] GetConvolution(in double[,] matrix,in double[,] Kkernel, bool isValid, int c = 1)
         {
             //var kernel = MatrixOperation.MatrixDuplicate(Kkernel);
             var kernel = MatrixOperation.FlipLeftRight(Kkernel);
@@ -109,6 +153,8 @@ namespace LucasKanade
             {
                 for (int j = paddingY; j < mColms - paddingY  - correctionY; j++)
                 {
+
+                    var tmp = 0.0;
                     for (int k = 0; k < kernelRows; k++)
                     {
                         for (int l = 0; l < kernelColms; l++)
@@ -118,9 +164,77 @@ namespace LucasKanade
 
                             if (x >= 0 && x < mRows &&
                                 y >= 0 && y < mColms)
-                                result[i - paddingX, j - paddingY] += matrix[x, y] * kernel[k, l];
+                            {
+                                tmp += matrix[x, y] * kernel[k, l] / c;
+                            }
                         }
                     }
+
+                    result[i - paddingX, j - paddingY] = tmp;
+                }
+            }
+            
+            return result;
+        }
+        
+        public static Image<Rgb24> GetConvolution(Image<Rgb24> image, in double[,] Kkernel, bool isValid, int c = 1)
+        {
+            //var kernel = MatrixOperation.MatrixDuplicate(Kkernel);
+            
+            var kernel = MatrixOperation.FlipLeftRight(Kkernel);
+            kernel = MatrixOperation.FlipUpDown(kernel);
+
+            var kernelRows = kernel.GetLength(0);
+            var kernelColms = kernel.GetLength(1);
+
+            var mRows = image.Width;
+            var mColms = image.Height;
+
+            var dx = (kernel.GetLength(0) - 1) / 2;
+            var dy = (kernel.GetLength(1) - 1) / 2;
+
+            var paddingX = 0;
+            var paddingY = 0;
+            var correctionX = 0;
+            var correctionY = 0;
+            if (isValid)
+            { 
+                correctionX = (kernel.GetLength(0)) % 2 == 0? 1 : 0;
+                correctionY = (kernel.GetLength(1)) % 2 == 0? 1 : 0;
+                
+                paddingX = dx;
+                paddingY = dy;
+            }
+
+            var result = new Image<Rgb24>(mRows, mColms);
+            
+            for (int i = paddingX; i < mRows - paddingX  - correctionX; i++)
+            {
+                for (int j = paddingY; j < mColms - paddingY  - correctionY; j++)
+                {
+                    var R = 0.0;
+                    var G = 0.0;
+                    var B = 0.0;
+                    
+                    for (int k = 0; k < kernelRows; k++)
+                    {
+                        for (int l = 0; l < kernelColms; l++)
+                        {
+                            int x = i  + k - dx; 
+                            int y = j  + l - dy;
+
+                            if (x >= 0 && x < mRows &&
+                                y >= 0 && y < mColms)
+                            {
+                                R += image[x, y].R * kernel[k, l] / c;
+                                G += image[x, y].G * kernel[k, l] / c;
+                                B += image[x, y].B * kernel[k, l] / c;
+                            }
+
+                        }
+                    }
+
+                    result[i - paddingX, j - paddingY] = new Rgb24((byte)Math.Abs(R), (byte)Math.Abs(G), (byte)Math.Abs(B));
                 }
             }
             

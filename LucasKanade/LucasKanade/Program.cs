@@ -11,7 +11,7 @@ namespace LucasKanade
         {
             Configuration.Default.MemoryAllocator = ArrayPoolMemoryAllocator.CreateWithAggressivePooling();
             
-            var opticalFlow = new OpticalFlow("C:\\Users\\Sergey\\Downloads\\seq.gif");
+            var opticalFlow = new OpticalFlow(".\\video\\seq.gif");
 
             opticalFlow.Open();
             var i = 0;
@@ -20,7 +20,7 @@ namespace LucasKanade
             {
 
                 frame.SaveAsPng($"./splitted/{i++}.png");
-             
+
                 Console.WriteLine($"FrameAll things time {watch.ElapsedMilliseconds} {i}");
                 watch.Restart();
             }

@@ -26,7 +26,7 @@ namespace LucasKanade
             var result = new double[endX - startX + 1, endY - startY + 1];
             for (int i = 0; startX < endX; startX++, i++)
             {
-                for (int j = 0;startY  < endY; startY++, j++)
+                for (int j = 0; startY < endY; startY++, j++)
                 {
                     result[i, j] = matrix[startX, startY];
                 }
@@ -34,7 +34,7 @@ namespace LucasKanade
 
             return result;
         }
-        
+
         public static T[,] MatrixDuplicate<T>(T[,] matrix)
         {
             var result = MatrixCreate<T>(matrix.GetLength(0), matrix.GetLength(1));
@@ -48,22 +48,22 @@ namespace LucasKanade
 
             return result;
         }
+
         public static int GetRowsCount<T>(T[,] m)
         {
             return m.GetLength(0);
         }
-        
+
         public static int GetColumnsCount<T>(T[,] m)
         {
             return m.GetLength(1);
         }
         
-        
         public static void Transpose<T>(T[,] matrix, T[,] buffer)
         {
             var rowsCount = GetRowsCount(matrix);
             var columnsCount = GetColumnsCount(matrix);
-            
+
             for (int rows = 0; rows < rowsCount; rows++)
             {
                 for (int columns = 0; columns < columnsCount; columns++)
@@ -72,7 +72,7 @@ namespace LucasKanade
                 }
             }
         }
-        
+
         // Transpose - транспонирует матрицу
         public static T[,] Transpose<T>(T[,] matrix)
         {
@@ -98,7 +98,7 @@ namespace LucasKanade
             {
                 for (int columns = 0; columns < GetColumnsCount(matrix); columns++)
                 {
-                    Console.Write($"{matrix[rows, columns]} ");
+                    Console.Write($"{matrix[rows, columns].ToString().Replace(',','.' )} ");
                 }
 
                 Console.Write(Environment.NewLine + Environment.NewLine);
@@ -128,7 +128,7 @@ namespace LucasKanade
                 }
             }
         }
-        
+
         // ConcatenateByXAxis конкатенирование массиво по оси x
         public static T[,] ConcatenateByXAxis<T>(T[,] first, T[,] second)
         {
@@ -139,7 +139,7 @@ namespace LucasKanade
 
             var rowsCount = GetRowsCount(first);
             var columnsCount = GetColumnsCount(first) + GetColumnsCount(second);
-            
+
             var result = new T[rowsCount, columnsCount];
 
             for (int rows = 0; rows < rowsCount; rows++)
@@ -158,7 +158,7 @@ namespace LucasKanade
 
             return result;
         }
-        
+
         public static T[,] ConcatenateByYAxis<T>(T[,] first, T[,] second)
         {
             if (first.GetLength(0) != second.GetLength(0))
@@ -173,15 +173,15 @@ namespace LucasKanade
             var rows = 0;
             for (; rows < first.GetLength(0); rows++)
             {
-                for (var columns = 0;columns < first.GetLength(1); columns++)
+                for (var columns = 0; columns < first.GetLength(1); columns++)
                 {
                     result[rows, columns] = first[rows, columns];
                 }
             }
-            
+
             for (var secondRows = 0; secondRows < second.GetLength(0); secondRows++)
             {
-                for (var columns = 0;columns < second.GetLength(1); columns++)
+                for (var columns = 0; columns < second.GetLength(1); columns++)
                 {
                     result[rows, columns] = second[secondRows, columns];
                 }
@@ -189,6 +189,7 @@ namespace LucasKanade
 
             return result;
         }
+
         public static double[,] MatrixMultiplier(double[,] first, double[,] second)
         {
             if (first.GetLength(1) != second.GetLength(0))
@@ -211,7 +212,7 @@ namespace LucasKanade
 
             return result;
         }
-        
+
         public static void MatrixMultiplier(double[,] first, double[,] second, double[,] buffer)
         {
             if (first.GetLength(1) != second.GetLength(0))
@@ -220,7 +221,7 @@ namespace LucasKanade
             }
 
             SetEmpty(buffer);
-            
+
             for (int i = 0; i < first.GetLength(0); i++)
             {
                 for (int j = 0; j < second.GetLength(1); j++)
@@ -237,8 +238,8 @@ namespace LucasKanade
         {
             var result = new double[,]
             {
-                {matrix[1,1], -1 * matrix[0, 1]},
-                {matrix[1, 0] * - 1, matrix[0, 0]}
+                {matrix[1, 1], -1 * matrix[0, 1]},
+                {matrix[1, 0] * -1, matrix[0, 0]}
             };
 
             var det = matrix[0, 0] * matrix[1, 1] - matrix[0, 1] * matrix[1, 0];
@@ -247,7 +248,7 @@ namespace LucasKanade
 
             return result;
         }
-        
+
         public static void FlattenInRows<T>(T[,] matrix, T[,] buffer)
         {
             var k = 0;
@@ -259,6 +260,7 @@ namespace LucasKanade
                 }
             }
         }
+
         public static T[,] FlattenInRows<T>(T[,] matrix)
         {
             var flattenMatrix = new T[matrix.GetLength(0) * matrix.GetLength(1), 1];
@@ -283,7 +285,7 @@ namespace LucasKanade
                 (a[indexOne, i], a[indexTwo, i]) = (a[indexTwo, i], a[indexOne, i]);
             }
         }
-        
+
         public static void Swap2DColons<T>(T[,] a, int indexOne, int indexTwo)
         {
             for (int i = 0; i < GetColumnsCount(a); i++)
@@ -315,7 +317,7 @@ namespace LucasKanade
 
             return result;
         }
-        
+
         public static T[,] FlipUpDown<T>(T[,] matrix)
         {
             var result = MatrixDuplicate(matrix);
@@ -349,7 +351,7 @@ namespace LucasKanade
                 }
             }
         }
-        
+
         public static void MatrixPlus(double[,] first, double[,] second)
         {
             for (int i = 0; i < first.GetLength(0); i++)
@@ -360,7 +362,7 @@ namespace LucasKanade
                 }
             }
         }
-        
+
         public static void MatrixDiv(double[,] first, double div)
         {
             for (int i = 0; i < first.GetLength(0); i++)
@@ -371,7 +373,7 @@ namespace LucasKanade
                 }
             }
         }
-        
+
         public static void MatrixMult(double[,] first, double m)
         {
             for (int i = 0; i < first.GetLength(0); i++)
@@ -382,32 +384,38 @@ namespace LucasKanade
                 }
             }
         }
-        
-        // с.з
-        public static double[] GetBasis(double[, ] matrix)
-        {
-            double a = matrix[0,0];
-            double b = matrix[0,1];
-            double c = matrix[1,0];
-            double d = matrix[1,1];
 
-            double eigenvalue1 = ((a+d) + Math.Sqrt( Math.Pow(a-d,2) + 4*b*c))/2;
-            double eigenvalue2 = ((a+d) - Math.Sqrt( Math.Pow(a-d,2) + 4*b*c))/2;
+        // с.з
+        public static double[] GetBasis(double[,] matrix)
+        {
+            double a = matrix[0, 0];
+            double b = matrix[0, 1];
+            double c = matrix[1, 0];
+            double d = matrix[1, 1];
+
+            double eigenvalue1 = ((a + d) + Math.Sqrt(Math.Pow(a - d, 2) + 4 * b * c)) / 2;
+            double eigenvalue2 = ((a + d) - Math.Sqrt(Math.Pow(a - d, 2) + 4 * b * c)) / 2;
 
             // Вектор с базисом
             double[] basis = new double[2];
 
-            for (double y = -1000; y <= 1000; y++) {
-                for (double x = -1000; x <= 1000; x++) {
-                    if (((a-eigenvalue1)*x + b*y == 0) && (c*x + (d-eigenvalue1)*y == 0)) {
+            for (double y = -1000; y <= 1000; y++)
+            {
+                for (double x = -1000; x <= 1000; x++)
+                {
+                    if (((a - eigenvalue1) * x + b * y == 0) && (c * x + (d - eigenvalue1) * y == 0))
+                    {
                         basis[0] = eigenvalue1;
                     }
                 }
-            }   
+            }
 
-            for (double y = -10; y <= 10; y++) {
-                for (double x = -10; x <= 10; x++) {
-                    if (((a-eigenvalue2)*x + b*y == 0) && (c*x + (d-eigenvalue2)*y == 0)) {
+            for (double y = -10; y <= 10; y++)
+            {
+                for (double x = -10; x <= 10; x++)
+                {
+                    if (((a - eigenvalue2) * x + b * y == 0) && (c * x + (d - eigenvalue2) * y == 0))
+                    {
                         basis[1] = eigenvalue2;
                     }
                 }
@@ -415,6 +423,21 @@ namespace LucasKanade
 
             return basis;
         }
+
+
+        public static double[,] Create(double[][] ar)
+        {
+            var res = new double[ar.GetLength(0), ar[0].GetLength(0)];
+
+            for (int i = 0; i < ar.GetLength(0); i++)
+            {
+                for (int j = 0; j < ar[0].GetLength(0); j++)
+                {
+                    res[i, j] = ar[i][j];
+                }
+            }
+
+            return res;
+        }
     }
-    
 }
