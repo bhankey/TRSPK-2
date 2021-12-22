@@ -21,19 +21,7 @@ namespace LucasKanade
             }
         }
 
-        public static double[,] ExtractSubMatrix(double[,] matrix, int startX, int endX, int startY, int endY)
-        {
-            var result = new double[endX - startX + 1, endY - startY + 1];
-            for (int i = 0; startX < endX; startX++, i++)
-            {
-                for (int j = 0; startY < endY; startY++, j++)
-                {
-                    result[i, j] = matrix[startX, startY];
-                }
-            }
-
-            return result;
-        }
+      
 
         public static T[,] MatrixDuplicate<T>(T[,] matrix)
         {
@@ -159,36 +147,6 @@ namespace LucasKanade
             return result;
         }
 
-        public static T[,] ConcatenateByYAxis<T>(T[,] first, T[,] second)
-        {
-            if (first.GetLength(0) != second.GetLength(0))
-            {
-                throw new ArgumentException("matrix must have same count of axis");
-            }
-
-            var rowsCount = first.GetUpperBound(0) + second.GetUpperBound(0) + 2;
-            var columnsCount = first.GetUpperBound(1) + 1;
-            var result = new T[rowsCount, columnsCount];
-
-            var rows = 0;
-            for (; rows < first.GetLength(0); rows++)
-            {
-                for (var columns = 0; columns < first.GetLength(1); columns++)
-                {
-                    result[rows, columns] = first[rows, columns];
-                }
-            }
-
-            for (var secondRows = 0; secondRows < second.GetLength(0); secondRows++)
-            {
-                for (var columns = 0; columns < second.GetLength(1); columns++)
-                {
-                    result[rows, columns] = second[secondRows, columns];
-                }
-            }
-
-            return result;
-        }
 
         public static double[,] MatrixMultiplier(double[,] first, double[,] second)
         {
@@ -217,7 +175,7 @@ namespace LucasKanade
         {
             if (first.GetLength(1) != second.GetLength(0))
             {
-                throw new ArgumentException("Can't calculate bla bla bla");
+                throw new ArgumentException("Can't calculate bla bla bla"); // заменить текст
             }
 
             SetEmpty(buffer);
@@ -294,17 +252,7 @@ namespace LucasKanade
             }
         }
 
-        public static T[] GetRow<T>(T[,] matrix, int i)
-        {
-            var result = new T[matrix.GetLength(0)];
 
-            for (int j = 0; j < matrix.GetLength(0); j++)
-            {
-                result[j] = matrix[j, i];
-            }
-
-            return result;
-        }
 
         public static T[,] FlipLeftRight<T>(in T[,] matrix)
         {
@@ -340,7 +288,7 @@ namespace LucasKanade
                 }
             }
         }
-
+        // переименовать во что то более адекватное
         public static void MatrixMinus(double[,] first, double[,] second)
         {
             for (int i = 0; i < first.GetLength(0); i++)
@@ -385,46 +333,7 @@ namespace LucasKanade
             }
         }
 
-        // с.з
-        public static double[] GetBasis(double[,] matrix)
-        {
-            double a = matrix[0, 0];
-            double b = matrix[0, 1];
-            double c = matrix[1, 0];
-            double d = matrix[1, 1];
-
-            double eigenvalue1 = ((a + d) + Math.Sqrt(Math.Pow(a - d, 2) + 4 * b * c)) / 2;
-            double eigenvalue2 = ((a + d) - Math.Sqrt(Math.Pow(a - d, 2) + 4 * b * c)) / 2;
-
-            // Вектор с базисом
-            double[] basis = new double[2];
-
-            for (double y = -1000; y <= 1000; y++)
-            {
-                for (double x = -1000; x <= 1000; x++)
-                {
-                    if (((a - eigenvalue1) * x + b * y == 0) && (c * x + (d - eigenvalue1) * y == 0))
-                    {
-                        basis[0] = eigenvalue1;
-                    }
-                }
-            }
-
-            for (double y = -10; y <= 10; y++)
-            {
-                for (double x = -10; x <= 10; x++)
-                {
-                    if (((a - eigenvalue2) * x + b * y == 0) && (c * x + (d - eigenvalue2) * y == 0))
-                    {
-                        basis[1] = eigenvalue2;
-                    }
-                }
-            }
-
-            return basis;
-        }
-
-
+        
         public static double[,] Create(double[][] ar)
         {
             var res = new double[ar.GetLength(0), ar[0].GetLength(0)];

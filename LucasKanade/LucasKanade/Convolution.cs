@@ -133,7 +133,7 @@ namespace LucasKanade
             
             return result;
         }
-        
+        // накладывает ядро свертки переданное в него на конкретное изображения, мы не используем, но пусть будет
         public static Image<Rgb24> GetConvolution(Image<Rgb24> image, in double[,] Kkernel, bool isValid, int c = 1)
         {
             //var kernel = MatrixOperation.MatrixDuplicate(Kkernel);

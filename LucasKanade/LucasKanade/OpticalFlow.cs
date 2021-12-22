@@ -56,7 +56,7 @@ namespace LucasKanade
             if (_width != frame.Width || _width != nextFrame.Width ||
                 _height != frame.Height || _height != nextFrame.Height)
             {
-                throw new ArgumentException("bla bla"); // TODO
+                throw new ArgumentException("bla bla"); // TODO изображения должны быть одинакого размера
             }
 
             ImageUtils.ToGrayScale(frame, _firstImageBuffer);

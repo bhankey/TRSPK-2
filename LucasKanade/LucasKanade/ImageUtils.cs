@@ -39,13 +39,15 @@ namespace LucasKanade
         }
 
         public static double LineScale = 10 ;
+        public static double LineScale1 = 30;
         public static float LineWidth = 1;
+        public static float LineWidth1 = 3;
         public static void DrawVectorsOnImage(Image<Rgb24> image, List<FlowPoints> vectors, int boxSize, double threshold) 
         {
             image.Mutate(imageContext =>
                 {
                     var points = new PointF[2];
-                    var square = new PointF[4];
+                    var square = new PointF[3];
                     foreach (var vector in vectors)
                     {
                         points[0] = new PointF(
@@ -62,26 +64,28 @@ namespace LucasKanade
                             r: (byte) 255,
                             g: (byte) 0,
                             b: (byte) 0);
+                        var lineColor1 = Color.FromRgb(
+                            r: (byte)0,
+                            g: (byte)255,
+                            b: (byte)0);
 
                         square[0] = new PointF(
-                            x: vector.X + 1,
-                            y: vector.Y + 1);
+                          x: (float)(vector.X + vector.XDirection * LineScale),
+                            y: (float)(vector.Y + vector.YDirection * LineScale));
                         square[1] = new PointF(
-                            x: vector.X + 1,
-                            y: vector.Y - 1);
+                           x: (float)(vector.X + vector.XDirection * LineScale),
+                            y: (float)(vector.Y + vector.YDirection * LineScale));
                         square[2] = new PointF(
-                            x: vector.X - 1,
-                            y: vector.Y - 1);
-                        square[3] = new PointF(
-                            x: vector.X - 1,
-                            y: vector.Y + 1);
+                          x: (float)(vector.X + vector.XDirection * LineScale),
+                            y: (float)(vector.Y + vector.YDirection * LineScale));
+
 
 
                         var linePen = new Pen(lineColor, LineWidth);
-
+                        var lineRen1 = new Pen(lineColor, LineWidth1);
 
                         imageContext.DrawLines(linePen, points);
-                        imageContext.DrawLines(linePen, square);
+                        imageContext.DrawLines(lineRen1, square);
                     }
 
                 }

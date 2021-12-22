@@ -3,6 +3,7 @@ using System.IO;
 
 namespace LucasKanade
 {
+    //В нем хранятся значения которые мы можем переключать, для изменения работы нашей программы. Для того, чтобы показать как будет работать алгоритм с модификациями и без.
     public static class Registry
     {
         private static readonly Dictionary<string, object> rDictionary = new()
