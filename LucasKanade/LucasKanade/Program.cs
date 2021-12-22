@@ -7,11 +7,11 @@ namespace LucasKanade
 {
     class Program
     {
-        static void MainAlgoCycle()
+        static void MainAlgoCycle(string path)
         {
             Configuration.Default.MemoryAllocator = ArrayPoolMemoryAllocator.CreateWithAggressivePooling();
 
-            using (var splitter = new VideoSplitter(".\\video\\seq.gif"))
+            using (var splitter = new VideoSplitter(path))
             {
                 splitter.LoadVideo();
 
@@ -46,9 +46,18 @@ namespace LucasKanade
 
         static void Main(string[] args)
         {
-           MainAlgoCycle();
+            string path = ".\\video\\seq.gif";
+            if (args == null || args.Length != 1)
+            {
+                System.Console.WriteLine($"Wrong parametrs. Using default path: {path}");
+            }
+            else
+            {
+                path = args[0];
+                System.Console.WriteLine($"Using path {path}");
+            }
             
-           // Convolution.TestConv();
+            MainAlgoCycle(args[0]);
         }
     }
 }
