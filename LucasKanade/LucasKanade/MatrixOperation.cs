@@ -2,7 +2,6 @@
 
 namespace LucasKanade
 {
-    // TODO написать вычисление обратной матрицы
     public static class MatrixOperation
     {
         public static T[,] MatrixCreate<T>(int rows, int cols)
@@ -152,7 +151,7 @@ namespace LucasKanade
         {
             if (first.GetLength(1) != second.GetLength(0))
             {
-                throw new ArgumentException("Can't calculate bla bla bla");
+                throw new ArgumentException("Images must be the same size ");
             }
 
             var result = new double[first.GetLength(0), second.GetLength(1)];
@@ -175,7 +174,7 @@ namespace LucasKanade
         {
             if (first.GetLength(1) != second.GetLength(0))
             {
-                throw new ArgumentException("Can't calculate bla bla bla"); // заменить текст
+                throw new ArgumentException("Images must be the same size ");
             }
 
             SetEmpty(buffer);
@@ -288,7 +287,7 @@ namespace LucasKanade
                 }
             }
         }
-        // переименовать во что то более адекватное
+       
         public static void MatrixMinus(double[,] first, double[,] second)
         {
             for (int i = 0; i < first.GetLength(0); i++)
@@ -331,22 +330,6 @@ namespace LucasKanade
                     first[i, j] *= m;
                 }
             }
-        }
-
-        
-        public static double[,] Create(double[][] ar)
-        {
-            var res = new double[ar.GetLength(0), ar[0].GetLength(0)];
-
-            for (int i = 0; i < ar.GetLength(0); i++)
-            {
-                for (int j = 0; j < ar[0].GetLength(0); j++)
-                {
-                    res[i, j] = ar[i][j];
-                }
-            }
-
-            return res;
         }
     }
 }

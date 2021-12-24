@@ -8,10 +8,8 @@ using Image = SixLabors.ImageSharp.Image;
 
 namespace LucasKanade
 {
-    // Дока говно - куча время))
-    // Если что-то не работает, то поставьте сборку только для x64
     
-    // TODO можно доработать класс для работы с потоком
+   
     public class VideoSplitter: IDisposable
     {
         private string _pathToVideo;
@@ -40,7 +38,7 @@ namespace LucasKanade
             _isLoaded = true;
         }
         
-        // TODO think about async
+    
         public bool TryGetNextFrame(out Image<Rgb24> bitmap)
         {
             bitmap = default;
@@ -61,7 +59,7 @@ namespace LucasKanade
 
             return true;
         }
-        public List<Image<Rgb24>> GetAllFrames()
+        public List<Image<Rgb24>> GetAllFrames() 
         {
             if (!_isLoaded)
             {
