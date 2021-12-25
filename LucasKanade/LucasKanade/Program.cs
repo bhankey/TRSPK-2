@@ -57,7 +57,7 @@ namespace LucasKanade
                 System.Console.WriteLine($"Using path {path}");
             }
             
-            MainAlgoCycle(args[0]);
+            MainAlgoCycle(path);
         }
     }
 }
