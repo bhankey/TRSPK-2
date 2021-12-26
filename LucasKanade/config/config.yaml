@@ -1,0 +1,6 @@
+﻿paths:
+  video: "./video/seq.gif"
+  ffmpeg: "./runtimes/win-x64/native"
+  output: "./splitted"
+  
+  

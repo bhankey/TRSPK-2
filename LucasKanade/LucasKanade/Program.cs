@@ -1,5 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using FFMediaToolkit;
+using Microsoft.Extensions.Configuration;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Memory;
 
@@ -7,13 +10,22 @@ namespace LucasKanade
 {
     class Program
     {
-        static void MainAlgoCycle(string path)
+        static void MainAlgoCycle(string videoPath, string outputDirectory)
         {
             Configuration.Default.MemoryAllocator = ArrayPoolMemoryAllocator.CreateWithAggressivePooling();
 
-            using (var splitter = new VideoSplitter(path))
+            using (var splitter = new VideoSplitter(videoPath))
             {
-                splitter.LoadVideo();
+                try
+                {
+                    splitter.LoadVideo();
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine($"Failed to open video by path {videoPath} or load ffmpeg");
+                    throw;
+                }
+                
 
                 var size = splitter.GetImageSize();
                 var opticalFlow = new OpticalFlow(size.Height, size.Width);
@@ -33,9 +45,16 @@ namespace LucasKanade
                 {
                     opticalFlow.TryGetNextOpticalFlowFrame(frame, nextFrame, out var result);
 
-                    result.SaveAsPng($"./splitted/{i++}.png");
+                    try
+                    {
+                        result.SaveAsPng($"{outputDirectory}\\{i++}.png");
+                    }
+                    catch (Exception)
+                    {
+                        Console.WriteLine("unable to save picture by path");
+                    }
 
-                    Console.WriteLine($"FrameAll things time {watch.ElapsedMilliseconds} {i}");
+                    Console.WriteLine($"Process frame time - {watch.ElapsedMilliseconds} #{i}");
 
                     frame = nextFrame;
 
@@ -46,18 +65,27 @@ namespace LucasKanade
 
         static void Main(string[] args)
         {
-            string path = ".\\video\\seq.gif";
-            if (args == null || args.Length != 1)
-            {
-                System.Console.WriteLine($"Wrong parametrs. Using default path: {path}");
-            }
-            else
-            {
-                path = args[0];
-                System.Console.WriteLine($"Using path {path}");
-            }
             
-            MainAlgoCycle(path);
+            var inMemoryConfigSettings = new Dictionary<string, string>()
+            {
+                {"paths:video", "./video/seq.gif"},
+                {"paths:ffmpeg", "./runtimes/win-x64/native"},
+                {"paths:output", "./splitted"}
+            };
+            
+            var config = new ConfigurationBuilder()
+                .AddInMemoryCollection(inMemoryConfigSettings)
+                .AddYamlFile($"{Environment.CurrentDirectory}\\config\\config.yaml", optional: true)
+                .Build();
+
+            var paths = config.GetSection("paths");
+
+            var output = paths.GetSection("output").Value;
+            var videoPath = paths.GetSection("video").Value;
+
+            FFmpegLoader.FFmpegPath = paths.GetSection("ffmpeg").Value;
+            
+            MainAlgoCycle(videoPath, output);
         }
     }
 }
