@@ -63,7 +63,7 @@ namespace LucasKanade
             var res = _lucasKanade.GetOpticalFlow(
                 _firstImageBuffer,
                 _secondImageBuffer,
-                (int)Registry.Get("threshold"), 
+                (double)Registry.Get("threshold"), 
                 (int)Registry.Get("interval_between_points"),
                 (int)Registry.Get("convolution_coefficient")
                 );
