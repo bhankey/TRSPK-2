@@ -25,8 +25,6 @@ namespace LucasKanade
     
     public class OpticalFlow
     {
-        private double _threshold = 0.05; // TODO
-        
         private LucasKanade _lucasKanade;
 
         private int _width;
@@ -65,14 +63,14 @@ namespace LucasKanade
             var res = _lucasKanade.GetOpticalFlow(
                 _firstImageBuffer,
                 _secondImageBuffer,
-                _threshold, 
+                (int)Registry.Get("threshold"), 
                 (int)Registry.Get("interval_between_points"),
                 (int)Registry.Get("convolution_coefficient")
                 );
 
             resultingFrame = frame.Clone();
             
-            ImageUtils.DrawVectorsOnImage(resultingFrame, res, _lucasKanade.BoxSize, _threshold);
+            ImageUtils.DrawVectorsOnImage(resultingFrame, res);
         }
     }
 }

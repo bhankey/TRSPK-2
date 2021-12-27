@@ -38,11 +38,11 @@ namespace LucasKanade
             }
         }
 
-        public static double LineScale = 10 ;
+        public static double LineScale = 10;
         public static double LineScale1 = 30;
         public static float LineWidth = 1;
         public static float LineWidth1 = 3;
-        public static void DrawVectorsOnImage(Image<Rgb24> image, List<FlowPoints> vectors, int boxSize, double threshold) 
+        public static void DrawVectorsOnImage(Image<Rgb24> image, List<FlowPoints> vectors) 
         {
             image.Mutate(imageContext =>
                 {
@@ -59,6 +59,14 @@ namespace LucasKanade
                             x: (float) (vector.X + vector.XDirection * LineScale),
                             y: (float) (vector.Y + vector.YDirection * LineScale)
                         );
+
+                        if (points[1].X > image.Width 
+                            || points[1].Y > image.Height 
+                            || points[1].X < 0
+                            || points[1].Y < 0)
+                        {
+                            continue;
+                        }
 
                         var lineColor = Color.FromRgb(
                             r: (byte) 255,
